@@ -1,0 +1,95 @@
+/* Isto cria uma barra lateral estreita fixada à esquerda da página */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 6rem;
+    padding: 2rem 1rem;
+    background-color: #008B8B;
+    z-index: 1050;
+    transition: width 0.1s ease-in-out;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 1.2);
+
+}
+.welcome-text {
+    color: white;
+}
+.nav-link-beat:hover {
+    animation: beat 0.5s infinite;
+}
+
+@keyframes beat {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+/* Quando o usuário passa o mouse sobre a barra lateral, ela se expande */
+.sidebar:hover {
+    width: 16rem;
+}
+.sidebar-item:hover .nav-link-text {
+    color: green;
+}
+
+/* Certifique-se de que o conteúdo do navlink não se enrole quando a barra de navegação se contrai */
+.sidebar .nav-link {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* Corrija a largura dos ícones */
+.sidebar .nav-link i {
+    width: 2rem;
+}
+
+/* Oculte os rótulos do navlink por padrão */
+.sidebar .nav-link span {
+    visibility: hidden;
+    opacity: 1;
+    transition: opacity 0.1s ease-in-out;
+}
+
+/* Quando a barra lateral é passada com o mouse, revele os rótulos */
+.sidebar:hover .nav-link span {
+    visibility: visible;
+    opacity: 1;
+    color: white;
+    marginRight: 10px;
+}
+
+/* Container para o cabeçalho da barra lateral. Certifique-se de que o conteúdo não se enrole quando
+ * a barra lateral é recolhida.
+ */
+.sidebar-header {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* Posicione o cabeçalho relativo ao logo e oculte por padrão */
+.sidebar-header h2 {
+    opacity: 0;
+    margin-left: 1rem;
+    margin-bottom: 0;
+    transition: opacity 0.1s ease-in-out;
+}
+
+/* Revele o cabeçalho quando a barra lateral é alternada */
+.sidebar:hover .sidebar-header h2 {
+    opacity: 1;
+}
+
+/* Posicione o conteúdo relativo à barra lateral recolhida */
+.content {
+    margin-left: 7rem;
+    margin-right: 2rem;
+    padding: 2rem 1rem;
+}
