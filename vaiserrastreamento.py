@@ -33,7 +33,7 @@ new_order = [
     'Identificação do Registro remessa',
     'Agência do BENEFICIÁRIO na UNICRED',
     'Data da Gravação do Arquivo',    
-    'Dígito da Agência',
+    'Dígito da Agência',hjhj
     'Conta Corrente',
     'Dígito da Conta Corrente',
     'Zero',

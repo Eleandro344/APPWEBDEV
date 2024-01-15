@@ -2,7 +2,7 @@ import dash
 import pandas as pd
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from components import home, faturamento, banco,rastrear,ajusteboletos,santander
+from components import home, faturamento, banco,rastrear,ajusteboletos,santander,login
 from dash import Dash, dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
@@ -93,6 +93,15 @@ sidebar = html.Div(
                     active="exact",
                     className="nav-link-beat"
                 ),
+                    dbc.NavLink(
+                    [
+                    html.I(className="fa-solid fa-file-circle-exclamation fa-lg", style={'verticalAlign': 'middle'}),
+                    html.Span("login", style={'verticalAlign': 'middle', 'marginLeft': '0px'}),
+                    ],
+                    href="/login",
+                    active="exact",
+                    className="nav-link-beat"
+                ),                
             ],
             vertical=True,
             pills=True,
@@ -104,6 +113,8 @@ sidebar = html.Div(
 home_layout = home.layout()
 faturamento_layout = faturamento.layout()
 banco_layout = banco.layout()
+login_layout = login.layout()
+
 santander_layout = santander.layout()
 #cadastro_cliente = cadastro_cliente.layout()
 ajusteboletoslayout = ajusteboletos.layout()
@@ -118,12 +129,14 @@ app.layout = html.Div([
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def display_page(pathname):
-    if pathname == '/' or pathname == "/home":
-        return home.layout()   
+    if pathname == '/' or pathname == "/login":
+        return login.layout()   
     if pathname == "/faturamento":
         return faturamento.layout()
+    if pathname == "/home":
+        return home.layout()
     if pathname == "/banco":
-        return banco.layout()
+        return banco.layout()    
  #   if pathname == "/home":
   #$      return home.layout()    
     if pathname == "/santander":
@@ -135,4 +148,4 @@ def display_page(pathname):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(port=8050, debug=True)
