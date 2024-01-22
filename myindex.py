@@ -2,7 +2,7 @@ import dash
 import pandas as pd
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from components import home, faturamento, banco,rastrear,ajusteboletos,santander,login
+from components import home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao
 from dash import Dash, dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
@@ -114,7 +114,7 @@ home_layout = home.layout()
 faturamento_layout = faturamento.layout()
 banco_layout = banco.layout()
 login_layout = login.layout()
-
+devolucao_layout = devolucao.layout()
 santander_layout = santander.layout()
 #cadastro_cliente = cadastro_cliente.layout()
 ajusteboletoslayout = ajusteboletos.layout()
@@ -135,10 +135,10 @@ def display_page(pathname):
         return faturamento.layout()
     if pathname == "/home":
         return home.layout()
+    if pathname == "/devolucao":
+        return devolucao.layout()    
     if pathname == "/banco":
-        return banco.layout()    
- #   if pathname == "/home":
-  #$      return home.layout()    
+        return banco.layout()       
     if pathname == "/santander":
         return santander.layout()    
     if pathname == "/rastrear":
@@ -146,6 +146,5 @@ def display_page(pathname):
     if pathname == "/ajusteboletos":
         return ajusteboletos.layout()
 
-
-if __name__ == "__main__":
-    app.run_server(port=8050, debug=True)
+if __name__ == '__main__':
+    app.run_server(debug=True,use_reloader=True, host='0.0.0.0')

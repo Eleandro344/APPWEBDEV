@@ -252,6 +252,3 @@ def update_table(n_clicks_doc, numero_boleto):
     else:
         raise PreventUpdate
 
-# Executar o aplicativo Dash
-if __name__ == '__main__':
-    app.run_server(debug=True)

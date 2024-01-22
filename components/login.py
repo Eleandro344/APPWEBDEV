@@ -4,26 +4,13 @@ import pandas as pd
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
 from app import app
-
-
-
-
-
-# import do dash_ autentication
+from dash import callback_context
 import dash_auth
-
-# lib conexão MySQL
 import mysql.connector
 
-### Import das Variaveis Controle ###
-import variaveisControle
 
-### Variáveis de conexão com o banco de dados ###
-host = variaveisControle.host
-user = variaveisControle.user
-password = variaveisControle.password
-database = variaveisControle.database
 
+app.title= 'Trimed Financ'
 
 ### Conexão Banco de Dados
 # Cria um dataframe contendo todos os usuários e senhas para ser iterada
@@ -34,14 +21,13 @@ mydb = mysql.connector.connect(
     database='db_sabertrimed',
 )
 mycursor = mydb.cursor()
-consultaSQL = 'SELECT usuario, senha FROM usuario'
+consultaSQL = 'SELECT usuario, senha  FROM usuario'
 mycursor.execute(consultaSQL)
 myresult = mycursor.fetchall()
 # Transforma o resultado da Query no BD em um dataframe
-df_usuario = pd.DataFrame(myresult, columns = ['Usuario', 'Senha'])
+df_usuario = pd.DataFrame(myresult, columns = ['usuario', 'Senha'])
 # Trasforma o resultado da Query no BD em um Dict
 usuariosBD = dict(myresult)
-
 
 
 
@@ -55,6 +41,8 @@ auth = dash_auth.BasicAuth(
     app,
     VALID_USERNAME_PASSWORD_PAIRS  
 )
+
+
 
 
 
@@ -84,3 +72,4 @@ def layout():
                                                                                         'margin-top': '5px',
                                                                                         'padding-top':'10px'})),
 ])
+

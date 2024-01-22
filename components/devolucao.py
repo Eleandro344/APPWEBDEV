@@ -33,42 +33,57 @@ def layout():
                     dbc.Card(
                         dbc.CardBody(
                             [
-                                dbc.Label("Nome"),
-                                dbc.Input(id="name-input", type="text", placeholder="Digite o nome"),
+                                dbc.Label("Cliente"),
+                                dbc.Input(id="cliente-input", type="text", placeholder="Digite o Cliente"),
                             ]
                         )
                     ),
                     dbc.Card(
                         dbc.CardBody(
                             [
-                                dbc.Label("Email"),
-                                dbc.Input(id="email-input", type="email", placeholder="Digite o email"),
+                                dbc.Label("Transporte"),
+                                dbc.Input(id="transporte-input", type="text", placeholder="Digite o Transporte"),
                             ]
                         )
                     ),
                     dbc.Card(
                         dbc.CardBody(
                             [
-                                dbc.Label("Telefone"),
-                                dbc.Input(id="phone-input", type="tel", placeholder="Digite o telefone"),
+                                dbc.Label("Volumes"),
+                                dbc.Input(id="volumes-input", type="text", placeholder="Quantidade de volumes"),
                             ]
                         )
                     ),
                     dbc.Card(
                         dbc.CardBody(
-                            dbc.Button("Cadastrar Cliente", id="submit-button", n_clicks=0, color="primary",
+                            [
+                                dbc.Label("Motivo"),
+                                dbc.Input(id="motivo-input", type="text", placeholder="Motivo"),
+                            ]
+                        )
+                    ),
+                    dbc.Card(
+                        dbc.CardBody(
+                            dbc.Button("Cadastrar devolução", id="submit-button", n_clicks=0, color="primary",
                                        className="mt-3")
                         )
                     ),
                 ]
             ),
-            html.Div(
+         html.Div(
                 [
-                    html.H2("Clientes Cadastrados"),
-                    dash_table.DataTable(
-                        id='client-table',
-                        columns=[{'name': col, 'id': col} for col in client_df.columns],
-                        data=client_df.to_dict('records'),
+                        html.H2("Devoluções cadastradas"),
+                        dash_table.DataTable(
+                            id='client-table',
+                            columns=[{'name': col, 'id': col} for col in client_df.columns],
+                            data=client_df.to_dict('records'),
+                            style_table={'overflowX': 'auto', 'maxHeight': '500px', 'overflowY': 'auto'},
+                            style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold'},
+                            style_cell={
+                                'textAlign': 'left',
+                                'whiteSpace': 'normal',
+                                'height': 'auto',
+                        },
                     )
                 ]
             ),
@@ -78,7 +93,7 @@ def layout():
 
 
 # Function to insert data into the database
-def insert_data_into_database(name, email, phone):
+def insert_data_into_database(cliente, transporte, volumes, motivo):
     mydb = mysql.connector.connect(
         host='db_sabertrimed.mysql.dbaas.com.br',
         user='db_sabertrimed',
@@ -89,8 +104,8 @@ def insert_data_into_database(name, email, phone):
     cursor = mydb.cursor()
 
     # Use placeholders to prevent SQL injection
-    query = "INSERT INTO devolucao (Nome, Email, Telefone) VALUES (%s, %s, %s)"
-    values = (name, email, phone)
+    query = "INSERT INTO devolucao (Cliente, Transporte, Volumes, Motivo) VALUES (%s, %s, %s, %s)"
+    values = (cliente, transporte, volumes, motivo)
 
     cursor.execute(query, values)
 
@@ -104,23 +119,23 @@ def insert_data_into_database(name, email, phone):
     Output("submit-button", "n_clicks"),
     [Input("submit-button", "n_clicks")],
     [
-        State("name-input", "value"),
-        State("email-input", "value"),
-        State("phone-input", "value"),
+        State("cliente-input", "value"),
+        State("transporte-input", "value"),
+        State("volumes-input", "value"),
+        State("motivo-input", "value"),
     ],
 )
-def update_client_df(n_clicks, name, email, phone):
-    if n_clicks > 0 and all([name, email, phone]):
+def update_client_df(n_clicks, cliente, transporte, volumes, motivo):
+    if n_clicks > 0 and all([cliente, transporte, volumes, motivo]):
         global client_df
-        new_data = {'Nome': [name], 'Email': [email], 'Telefone': [phone]}
+        new_data = {'Cliente': [cliente], 'Transporte': [transporte], 'Volumes': [volumes], 'Motivo': [motivo]}
         client_df = pd.concat([client_df, pd.DataFrame(new_data)], ignore_index=True)
 
         # Insert data into the database
-        insert_data_into_database(name, email, phone)
+        insert_data_into_database(cliente, transporte, volumes, motivo)
 
     # Prevent updating the button's n_clicks property to avoid re-triggering the callback
     raise PreventUpdate
 
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
+

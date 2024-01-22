@@ -15,13 +15,13 @@ from app import app  # Importa o objeto app do arquivo app.py
 
 tabela_docs = pd.read_excel('C:/Users/elean/Desktop/bancodedados/docs.xlsx')
 
-tabela_docs.loc[tabela_docs['Banco'] == 'Itau', 'Banco']= "larca"
+tabela_docs.loc[tabela_docs['Banco'] == 'Itau', 'Banco']= "Itau"
 tabela_docs.loc[tabela_docs['Banco'] == 'Bradesco', 'Banco']= "Stratton"
 tabela_docs = tabela_docs[tabela_docs['Status']!='Cancelado']
-tabela_docs.loc[tabela_docs['Banco'] != 'larca', 'TAC'] = 0
+tabela_docs.loc[tabela_docs['Banco'] != 'Itau', 'TAC'] = 0
 #Cria taxa de boleto
 tabela_docs['Taxa de boleto'] = 0
-tabela_docs.loc[tabela_docs['Banco'] == 'larca', 'Taxa de boleto']= 0.00
+tabela_docs.loc[tabela_docs['Banco'] == 'Itau', 'Taxa de boleto']= 0.00
 tabela_docs.loc[tabela_docs['Banco'] == 'Santander', 'Taxa de boleto']= 1.35
 tabela_docs.loc[tabela_docs['Banco'] == 'Unicred ES', 'Taxa de boleto']= 1.30
 tabela_docs.loc[tabela_docs['Banco'] == 'Stratton', 'Taxa de boleto']= 2.00
@@ -29,7 +29,7 @@ tabela_docs = tabela_docs[tabela_docs['Status']!='Cancelado']
 tabela_docs = tabela_docs[tabela_docs['Status']!='Solic. Baixa']
 def contagemboletos(tabela_docs):
     # Filtra os boletos com valor igual a 'larca' na coluna 'Banco'
-    boletos_larca = tabela_docs.loc[tabela_docs['Banco'] == 'larca', 'Com Registro']
+    boletos_larca = tabela_docs.loc[tabela_docs['Banco'] == 'Itau', 'Com Registro']
 
     # Verifica se há boletos com valor 'larca'
     if not boletos_larca.empty:
@@ -50,7 +50,7 @@ tabela_docs['TAC'] = valortac
 #tabela_docs['TAC'] = valortac.astype(float)
 tabela_docs['TAC'] = tabela_docs['TAC'].round(2)
 
-tabela_docs.loc[tabela_docs['Banco'] != 'larca', 'TAC'] = 0
+tabela_docs.loc[tabela_docs['Banco'] != 'Itau', 'TAC'] = 0
 
 #SOMA TAXA DE BOLETO DOCS
 total = tabela_docs['Com Registro'].sum()
@@ -80,7 +80,7 @@ somaunicred = tabela_docs.loc[tabela_docs['Banco'] == 'Unicred ES', 'Valor'].sum
 #CADASTRA TAXA DE JUROS
 #AO DIA
 tabela_docs.loc[tabela_docs['Banco'] == 'Unicred ES', 'taxa_juros']= 0.0496666666666667
-tabela_docs.loc[tabela_docs['Banco'] == 'larca', 'taxa_juros']= 0.073333
+tabela_docs.loc[tabela_docs['Banco'] == 'Itau', 'taxa_juros']= 0.073333
 tabela_docs.loc[tabela_docs['Banco'] == 'Santander', 'taxa_juros']= 0.05248011
 tabela_docs.loc[tabela_docs['Banco'] == 'Stratton', 'taxa_juros']= 0.056
 #zera nan da coluna taxajuros
@@ -133,8 +133,8 @@ faturamento = faturamento.reindex(columns=['Banco', 'Com Registro', 'Valor','TAC
 faturamento['liquido']= faturamento ['Valor'] - faturamento['TAC'] - faturamento['Taxa de boleto'] - faturamento ['IOF'] - faturamento['Recompra'] - faturamento['descontado']
 faturamento['CET'] = faturamento ['Valor'] - faturamento['TAC'] - faturamento ['IOF'] - faturamento['descontado']
 faturamento['CET']  = faturamento ['Valor'] - faturamento ['CET']
-faturamento.loc[faturamento['Banco'] == 'larca', 'CET'] = faturamento ['Valor'] - faturamento['TAC'] - faturamento ['IOF'] - faturamento['descontado'] 
-faturamento.loc[faturamento['Banco'] == 'larca', 'CET'] = faturamento ['Valor'] - faturamento ['CET']
+faturamento.loc[faturamento['Banco'] == 'Itau', 'CET'] = faturamento ['Valor'] - faturamento['TAC'] - faturamento ['IOF'] - faturamento['descontado'] 
+faturamento.loc[faturamento['Banco'] == 'Itau', 'CET'] = faturamento ['Valor'] - faturamento ['CET']
 faturamento.loc[faturamento['Banco'] == 'Unicred ES', 'IOF'] = faturamento['Valor'] * 0.3841 /100
 faturamento.loc[faturamento['Banco'] == 'Unicred ES', 'CET'] = faturamento['IOF'] + faturamento['descontado']
 faturamento['CET'] = faturamento['CET'] * 100 / faturamento['Valor']
@@ -143,7 +143,7 @@ faturamento['CET'] = faturamento['CET'].round(3)
 faturamento['CET'] = faturamento['CET'] / 100
 faturamento['CET'] = faturamento['CET'].map('{:.2%}'.format)
 # Filtrar os dados para o banco "larca"
-larca_df = tabela_docs[tabela_docs['Banco'] == 'larca']
+larca_df = tabela_docs[tabela_docs['Banco'] == 'Itau']
 
 # Calcular a média ponderada
 soma_produto = (larca_df['media_pagamento'] * larca_df['Valor']).sum()
@@ -151,7 +151,7 @@ soma_valores = larca_df['Valor'].sum()
 media_ponderada_larca = soma_produto / soma_valores
 media_ponderada_larca
 media_ponderada_larca = media_ponderada_larca.round(2)
-faturamento.loc[faturamento['Banco'] == 'larca', 'media_pagamento'] = media_ponderada_larca
+faturamento.loc[faturamento['Banco'] == 'Itau', 'media_pagamento'] = media_ponderada_larca
 # Filtrar os dados para o banco "santander"
 santanderdf = tabela_docs[tabela_docs['Banco'] == 'Santander']
 
@@ -269,9 +269,7 @@ def layout():
 #@app.callback(Output('data-table', 'data'),
  #             [Input('date-picker-range', 'start_date'),
   #             Input('date-picker-range', 'end_date')])
-def update_table(start_date, end_date):
-    filtered_df = faturamento[(faturamento['Data'] >= start_date) & (faturamento['Data'] <= end_date)]
-    return filtered_df.to_dict('records')
+#def update_table(start_date, end_date):
+ #   filtered_df = faturamento[(faturamento['Data'] >= start_date) & (faturamento['Data'] <= end_date)]
+  #  return filtered_df.to_dict('records')
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
