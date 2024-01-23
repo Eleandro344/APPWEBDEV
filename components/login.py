@@ -41,35 +41,26 @@ auth = dash_auth.BasicAuth(
     app,
     VALID_USERNAME_PASSWORD_PAIRS  
 )
-
-
-
-
-
-
 def layout():
     return html.Div([
-    html.H1('Bem vindo ao Sistema Financeiro', style={'border-width':'3px',
-                                                            'margin-left':'35%',
-                                                            'margin-top': '5px',
-                                                            'padding-top':'10px'}),
-    html.H3('Login realizado com sucesso!', style={'border-width':'3px',
-                                                            'margin-left':'35%',
-                                                            'margin-top': '5px',
-                                                            'padding-top':'10px'}),
-    html.Div(children = html.Img(src='/assets/logo.png', 
-            style={'background-color': 'transparent', 
-                        'border-color':'transparent', 
-                        'height':'25%', 
-                        'width':'25%', 
-                        'margin-left':'41.8%',
-                        'margin-top':'100px',})
-    ),
-    html.Div(
-        dbc.Button('Continuar para Menu Principal', id='login', href='/home', style={'border-width':'3px',
-                                                                                        'font-size':'14px', 
-                                                                                        'margin-left':'45%',
-                                                                                        'margin-top': '5px',
-                                                                                        'padding-top':'10px'})),
-])
-
+        html.Header(
+            html.Img(src='/assets/logobranco.png', className="logo-img", style={'width': '15%'}),
+            style={
+                'background-color': '#008B8B',  # Cor de fundo azul
+                'padding': '15px',  # Espaçamento interno
+                'text-align': 'center',  # Alinhamento centralizado
+                'font-family': 'Arial, sans-serif',
+                'text-shadow': '2px 2px 4px rgba(0, 0, 0, 0.3)',  # Sombra de texto suave
+                'letter-spacing': '2px',  # Espaçamento entre letras
+            }
+        ),
+        html.Div([
+            html.Iframe(
+                src="https://lottie.host/embed/580b3172-98d5-4868-ba24-09d525f483fd/ZzflFlsYZU.json",
+                style={'width': '550px', 'height': '550px', 'margin': 'auto', 'display': 'block'}
+            )
+        ]),
+        html.Div(dbc.Button('Continuar para Menu Principal', id='login', href='/home',
+                            style={'border-width': '3px', 'font-size': '14px','background-color': '#008B8B', 'margin-left': '43%', 'margin-top': '15px', 'padding-top': '10px'})
+        ),
+    ])

@@ -106,6 +106,7 @@ sidebar = html.Div(
             vertical=True,
             pills=True,
         ),
+        
     ],
     className="sidebar",
 )
