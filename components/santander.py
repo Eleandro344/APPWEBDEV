@@ -11,8 +11,7 @@ from app import app  # Importa o objeto app do arquivo app.py
 
 def layout():
     return html.Div([
-        html.Iframe(
-            src="https://lottie.host/embed/580b3172-98d5-4868-ba24-09d525f483fd/ZzflFlsYZU.json",
-            style={'width': '500px', 'height': '500px', 'margin': 'auto', 'display': 'block'}
-        )
+        html.H1(children='AQUI VAI SER O BANCO SANTANDER', style={'textAlign':'center'}),
+
     ])
+

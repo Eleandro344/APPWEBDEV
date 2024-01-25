@@ -11,6 +11,7 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.MATERIA, dbc.icons.FONT_AWESOME],
 )
 
+app.config.suppress_callback_exceptions = True  # Desativa o cache de callback
 
 app.config['suppress_callback_exceptions'] = True
 app.scripts.config.serve_locally = True

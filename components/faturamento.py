@@ -243,8 +243,11 @@ def layout():
                 style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold'},  # Estilo do cabeçalho
                 style_cell={'textAlign': 'left', 'minWidth': '100px', 'font-family': 'Calibri'},  # Estilo das células
                 style_data_conditional=[
-                    {
-                        'if': {'column_id': 'Valor Liquido'},
+                    {  'if': {'row_index': 'odd'},
+                       'backgroundColor': 'rgb(248, 248, 248)',
+                    },
+                       {
+                         'if': {'column_id': 'Valor Liquido'},
                         'backgroundColor': 'green',
                         'color': 'white',
                     },
