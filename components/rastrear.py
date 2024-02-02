@@ -101,8 +101,15 @@ df_remessa.rename(columns=novos_nomes, inplace=True)
 # Consulta na tabela unicredretorno
 consulta_retorno = "SELECT * FROM retornounicred"
 df_retorno = pd.read_sql(consulta_retorno, con=mydb)
-df_retorno = df_retorno.sort_values(by='DATA DA GERAÇÃO DO ARQUIVO', ascending=True)
 
+#df_retorno = df_retorno.sort_values(by='DATA DA GERAÇÃO DO ARQUIVO', ascending=True)
+
+#df_retorno['DATA DA GERAÇÃO DO ARQUIVO'] = pd.to_datetime(df_retorno['DATA DA GERAÇÃO DO ARQUIVO'], format='%d/%m/%Y')
+df_retorno['DATA DA GERAÇÃO DO ARQUIVO'] = pd.to_datetime(df_retorno['DATA DA GERAÇÃO DO ARQUIVO'], format='%d%m%y', errors='coerce')
+
+# Ordenar o DataFrame pela coluna 'Data da Ocorrência' de forma crescente
+#df_retorno = df_retorno.sort_values(by='DATA DA GERAÇÃO DO ARQUIVO')
+df_retorno = df_retorno.sort_values(by=['DATA DA GERAÇÃO DO ARQUIVO', 'SEQUENCIAL DO REGISTRO'], ascending=[True, False])
 
 
 new_order = [
@@ -182,10 +189,9 @@ df_remessa['Data da Ocorrencia'] = pd.to_datetime(df_remessa['Data da Ocorrencia
 df_remessa['Data da Ocorrencia'] = df_remessa['Data da Ocorrencia'].dt.strftime('%d/%m/%Y')
 
 # Converter a coluna 'Data da Ocorrencia' para o formato de data do pandas
-df_retorno['Data da Ocorrencia'] = pd.to_datetime(df_retorno['Data da Ocorrencia'], format='%d%m%y', errors='coerce')
 
 # Formatar a coluna 'Data da Ocorrencia' no novo formato desejado
-df_retorno['Data da Ocorrencia'] = df_retorno['Data da Ocorrencia'].dt.strftime('%d/%m/%Y')
+#df_retorno['Data da Ocorrencia'] = df_retorno['Data da Ocorrencia'].dt.strftime('%d/%m/%Y')
 
 
 df_retorno['DATA LIQUIDAÇÃO'] = pd.to_datetime(df_retorno['DATA LIQUIDAÇÃO'], format='%d%m%y', errors='coerce')
@@ -216,7 +222,8 @@ def layout():
         dbc.Row([
             dbc.Col(
                 [
-                    html.H3("Rastreamento de Boletos Banco Unicred", style={'marginBottom': '20px', 'margin-top': '10px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '20px'}),
+                    html.Img(src='/assets/unicredimagem.png', className="logo-img", style={'width': '10%', 'marginLeft': '450px','marginTop': '0px'}),
+                    html.H3("Rastreamento de Boletos Unicred", style={'marginBottom': '20px', 'margin-top': '0px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '0px'}),
                     dbc.Input(id='numero-boleto-input', type='text', placeholder='Digite o número do boleto'),
                     dbc.Button('Pesquisar por Nº do Documento', id='pesquisar-doc-button', n_clicks=0, color='primary', className='mr-1', style={'margin-bottom': '20px'}),
                     create_data_table('data-table-remessa', df_remessa)

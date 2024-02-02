@@ -17,7 +17,7 @@ mydb = mysql.connector.connect(
 )
 
 # Consulta na tabela unicredremessa
-consulta_remessa = "SELECT * FROM remessa_santander"
+consulta_remessa = "SELECT * FROM remessa_sofisa"
 df_remessa1 = pd.read_sql(consulta_remessa, con=mydb)
 
 new_order = [
@@ -97,24 +97,14 @@ df_remessa1.rename(columns=novos_nomes, inplace=True)
 df_remessa1 = df_remessa1.sort_values(by='Data da Ocorrencia', ascending=True)
 
 
-consulta_retorno = "SELECT * FROM retorno_santander"
-
+consulta_retorno = "SELECT * FROM retorno_sofisa"
 df_retorno1 = pd.read_sql(consulta_retorno, con=mydb)
 
-
-
-df_retorno1['Data da ocorrência'] = pd.to_datetime(df_retorno1['Data da ocorrência'])
-df_retorno1 = df_retorno1.sort_values(by='Data da ocorrência')
-
-#df_retorno1['Data da ocorrência']= df_retorno1['Data da ocorrência'].dt.strftime('%d/%m/%Y')
-
-mydb.close()
-
-#df_retorno1['Data da ocorrência'] = df_retorno1['Data da ocorrência'].dt.strftime('%d/%m/%Y')
-
+df_retorno1['Data da geração do arquivo'] = pd.to_datetime(df_retorno1['Data da geração do arquivo'], format='%d%m%y', errors='coerce')
+df_retorno1['Data da geração do arquivo'] = df_retorno1['Data da geração do arquivo'].dt.strftime('%d/%m/%Y')
 
 new_order = [
-    'Data da ocorrência', 
+    'Data da ocorrência',
     'Código movimento retorno',        
     'CODIGO DO DOC',
     'Tipo de cobrança', 
@@ -186,31 +176,25 @@ new_order = [
     'Número do aviso da cobrança descontada',
     'Número Sequência do arquivo trailer',
     'Número Sequencial do registro do arquivo trailer',
-    'Data da geração do arquivo',     
+    'Data da geração do arquivo',  
+
 ]
 df_retorno1 = df_retorno1[new_order]
-
 novos_nomes = {
     'Data da ocorrência': 'Data da Ocorrencia',
-
     'Código movimento retorno': 'Ocorrencia',
+    # ... adicione os outros nomes conforme necessário
 }
+
+
+
 df_retorno1.rename(columns=novos_nomes, inplace=True)
 
-df_frente = df_retorno1.head(5)
+#df_retorno1 = df_retorno1.sort_values(by='Data da Ocorrencia', ascending=True)
+df_retorno1 = df_retorno1.sort_values(by=['Data da Ocorrencia', 'Número Sequência do arquivo corpo'], ascending=[True, False])
 
 
-
-# Convertendo a coluna de datas para o tipo datetime
-#df_retorno1['Data da Ocorrencia'] = pd.to_datetime(df_retorno1['Data da Ocorrencia'], format='%d/%m/%Y')
-
-# Ordenando o DataFrame pela coluna de datas
-#df_retorno1 = df_retorno1.sort_values(by='Data da Ocorrencia')
-
-
-
-
-
+mydb.close()
 
 
 
@@ -224,7 +208,7 @@ def create_data_table(id, data):
         id=id,
         data=data.to_dict('records'),
         columns=[{'name': col, 'id': col} for col in data.columns],
-        page_size=30,
+        page_size=80,
         style_table={'overflowX': 'auto', 'width': '125%', 'margin-left': '-12%', 'margin-right': 'auto', 'z-index': '0'},
         style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold'},
         style_cell={'textAlign': 'left', 'minWidth': '100px', 'font-family': 'Calibri'},
@@ -241,18 +225,18 @@ def layout():
         dbc.Row([
             dbc.Col(
                 [
-                    html.Img(src='/assets/santanderimagem.png', className="logo-img", style={'width': '15%', 'marginLeft': '500px','marginTop': '0px'}),
-                    html.H3("Rastreamento de Boletos Banco Santander", style={'marginBottom': '20px', 'margin-top': '10px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '20px'}),
+                    html.Img(src='/assets/Sofisaimagem.png', className="logo-img", style={'width': '10%', 'marginLeft': '500px','marginTop': '0px'}),
+                    html.H3("Rastreamento de Boletos Banco Sofisa", style={'marginBottom': '20px', 'margin-top': '0px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '0px'}),
                     dbc.Input(id='numero-boleto-input', type='text', placeholder='Digite o número do boleto'),
                     dbc.Button('Pesquisar por Nº do Documento', id='pesquisar-doc-button', n_clicks=0, color='primary', className='mr-1', style={'margin-bottom': '20px'}),
-                    create_data_table('data-table1-remessa', df_remessa1)
+                    create_data_table('data-table2-remessa', df_remessa1)
                 ]
             )
         ]),
         dbc.Row([
             dbc.Col(
                 [
-                    create_data_table('data-table1-retorno', df_frente)
+                    create_data_table('data-table2-retorno', df_retorno1)
                 ]
             )
         ])
@@ -260,8 +244,8 @@ def layout():
 
 # Callback for updating the tables based on the search button
 @app.callback(
-    [Output('data-table1-remessa', 'data'),
-     Output('data-table1-retorno', 'data')],
+    [Output('data-table2-remessa', 'data'),
+     Output('data-table2-retorno', 'data')],
     [Input('pesquisar-doc-button', 'n_clicks')],
     [State('numero-boleto-input', 'value')],
     allow_duplicate=True
