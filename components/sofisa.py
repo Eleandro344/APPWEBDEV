@@ -206,7 +206,7 @@ mydb.close()
 def create_data_table(id, data):
     return dash_table.DataTable(
         id=id,
-        data=data.to_dict('records'),
+        data=data.head(10).to_dict('records'),
         columns=[{'name': col, 'id': col} for col in data.columns],
         page_size=80,
         style_table={'overflowX': 'auto', 'width': '125%', 'margin-left': '-12%', 'margin-right': 'auto', 'z-index': '0'},
@@ -242,7 +242,6 @@ def layout():
         ])
     ])
 
-# Callback for updating the tables based on the search button
 @app.callback(
     [Output('data-table2-remessa', 'data'),
      Output('data-table2-retorno', 'data')],
@@ -253,11 +252,11 @@ def layout():
 def update_table(n_clicks_doc, numero_boleto):
     ctx = dash.callback_context
     if not numero_boleto or n_clicks_doc == 0:
-        return df_remessa1.to_dict('records'), df_retorno1.to_dict('records')
+        return df_remessa1.head(10).to_dict('records'), df_retorno1.head(10).to_dict('records')  # Exibe apenas as 5 primeiras linhas se não houver pesquisa
 
     if ctx.triggered_id == 'pesquisar-doc-button':
         resultado_pesquisa_remessa = df_remessa1[df_remessa1['CODIGO DO DOC'].astype(str) == numero_boleto]
         resultado_pesquisa_retorno = df_retorno1[df_retorno1['CODIGO DO DOC'].astype(str) == numero_boleto]
-        return resultado_pesquisa_remessa.to_dict('records'), resultado_pesquisa_retorno.to_dict('records')
+        return resultado_pesquisa_remessa.head(10).to_dict('records'), resultado_pesquisa_retorno.head(10).to_dict('records')
     else:
         raise PreventUpdate

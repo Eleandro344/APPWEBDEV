@@ -110,7 +110,7 @@ df_retorno['DATA DA GERAÇÃO DO ARQUIVO'] = pd.to_datetime(df_retorno['DATA DA 
 # Ordenar o DataFrame pela coluna 'Data da Ocorrência' de forma crescente
 #df_retorno = df_retorno.sort_values(by='DATA DA GERAÇÃO DO ARQUIVO')
 df_retorno = df_retorno.sort_values(by=['DATA DA GERAÇÃO DO ARQUIVO', 'SEQUENCIAL DO REGISTRO'], ascending=[True, False])
-
+    
 
 new_order = [
     'DATA DA GERAÇÃO DO ARQUIVO',
@@ -203,7 +203,7 @@ df_retorno['DATA LIQUIDAÇÃO'] = df_retorno['DATA LIQUIDAÇÃO'].dt.strftime('%
 def create_data_table(id, data):
     return dash_table.DataTable(
         id=id,
-        data=data.to_dict('records'),
+        data=data.head(10).to_dict('records'),
         columns=[{'name': col, 'id': col} for col in data.columns],
         page_size=80,
         style_table={'overflowX': 'auto', 'width': '125%', 'margin-left': '-12%', 'margin-right': 'auto', 'z-index': '0'},
@@ -226,14 +226,14 @@ def layout():
                     html.H3("Rastreamento de Boletos Unicred", style={'marginBottom': '20px', 'margin-top': '0px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '0px'}),
                     dbc.Input(id='numero-boleto-input', type='text', placeholder='Digite o número do boleto'),
                     dbc.Button('Pesquisar por Nº do Documento', id='pesquisar-doc-button', n_clicks=0, color='primary', className='mr-1', style={'margin-bottom': '20px'}),
-                    create_data_table('data-table-remessa', df_remessa)
+                    create_data_table('data-table-remessa3', df_remessa)
                 ]
             )
         ]),
         dbc.Row([
             dbc.Col(
                 [
-                    create_data_table('data-table-retorno', df_retorno)
+                    create_data_table('data-table-retorno3', df_retorno)
                 ]
             )
         ])
@@ -241,8 +241,8 @@ def layout():
 
 # Callback para atualizar as tabelas com base no botão de pesquisa
 @app.callback(
-    [Output('data-table-remessa', 'data'),
-     Output('data-table-retorno', 'data')],
+    [Output('data-table-remessa3', 'data'),
+     Output('data-table-retorno3', 'data')],
     [Input('pesquisar-doc-button', 'n_clicks')],
     [State('numero-boleto-input', 'value')],
     allow_duplicate=True
@@ -250,12 +250,12 @@ def layout():
 def update_table(n_clicks_doc, numero_boleto):
     ctx = dash.callback_context
     if not numero_boleto or n_clicks_doc == 0:
-        return df_remessa.to_dict('records'), df_retorno.to_dict('records')
+        return df_remessa.head(10).to_dict('records'), df_retorno.head(10).to_dict('records')  # Exibe apenas as 5 primeiras linhas se não houver pesquisa
 
     if ctx.triggered_id == 'pesquisar-doc-button':
         resultado_pesquisa_remessa = df_remessa[df_remessa['CODIGO DO DOC'].astype(str) == numero_boleto]
         resultado_pesquisa_retorno = df_retorno[df_retorno['CODIGO DO DOC'].astype(str) == numero_boleto]
-        return resultado_pesquisa_remessa.to_dict('records'), resultado_pesquisa_retorno.to_dict('records')
+        return resultado_pesquisa_remessa.head(10).to_dict('records'), resultado_pesquisa_retorno.head(10).to_dict('records')
     else:
         raise PreventUpdate
 

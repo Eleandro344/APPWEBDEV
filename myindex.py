@@ -2,7 +2,7 @@ import dash
 import pandas as pd
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from components import home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao
+from components import home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa
 from dash import Dash, dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
@@ -55,7 +55,16 @@ sidebar = html.Div(
                     href="/santander",
                     active="exact",
                     className="nav-link-beat"
-                ),                
+                ),  
+                dbc.NavLink(
+                    [
+                        html.I(className="fa-solid fa-barcode fa-lg", style={'verticalAlign': 'middle'}),
+                        html.Span(" Banco Sofisa", style={'verticalAlign': 'middle', 'marginLeft': '30px'}),
+                    ],
+                    href="/sofisa",
+                    active="exact",
+                    className="nav-link-beat"
+                ),                               
                 html.Div(id='open-new-tab'),
                 dbc.NavLink(    
                     [
@@ -119,6 +128,7 @@ devolucao_layout = devolucao.layout()
 santander_layout = santander.layout()
 #cadastro_cliente = cadastro_cliente.layout()
 ajusteboletoslayout = ajusteboletos.layout()
+sofisa_layout = sofisa.layout()
 
 app.layout = html.Div([
     sidebar,
@@ -142,6 +152,8 @@ def display_page(pathname):
         return banco.layout()       
     if pathname == "/santander":
         return santander.layout()    
+    if pathname == "/sofisa":
+        return sofisa.layout()      
     if pathname == "/rastrear":
         return rastrear.layout()
     if pathname == "/ajusteboletos":

@@ -94,7 +94,9 @@ novos_nomes = {
     # ... adicione os outros nomes conforme necessário
 }
 df_remessa1.rename(columns=novos_nomes, inplace=True)
+
 df_remessa1 = df_remessa1.sort_values(by='Data da Ocorrencia', ascending=True)
+
 
 
 consulta_retorno = "SELECT * FROM retorno_santander"
@@ -197,7 +199,6 @@ novos_nomes = {
 }
 df_retorno1.rename(columns=novos_nomes, inplace=True)
 
-df_frente = df_retorno1.head(5)
 
 
 
@@ -222,19 +223,19 @@ df_frente = df_retorno1.head(5)
 def create_data_table(id, data):
     return dash_table.DataTable(
         id=id,
-        data=data.to_dict('records'),
+        data=data.head(10).to_dict('records'),  # Exibir apenas as 5 primeiras linhas
         columns=[{'name': col, 'id': col} for col in data.columns],
-        page_size=30,
+        page_size=80,
         style_table={'overflowX': 'auto', 'width': '125%', 'margin-left': '-12%', 'margin-right': 'auto', 'z-index': '0'},
         style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold'},
         style_cell={'textAlign': 'left', 'minWidth': '100px', 'font-family': 'Calibri'},
-            style_data_conditional=[
-                {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248, 248, 248)'},
+        style_data_conditional=[
+            {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248, 248, 248)'},
             {'if': {'column_id': 'Ocorrencia'}, 'backgroundColor': '#006400', 'color': 'white'},
             {'if': {'column_id': 'Ocorrencia'}, 'backgroundColor': '#006400', 'color': 'white'},
-
         ],
     )
+
 
 def layout():
     return dbc.Container([
@@ -252,13 +253,12 @@ def layout():
         dbc.Row([
             dbc.Col(
                 [
-                    create_data_table('data-table1-retorno', df_frente)
+                    create_data_table('data-table1-retorno', df_retorno1)
                 ]
             )
         ])
     ])
 
-# Callback for updating the tables based on the search button
 @app.callback(
     [Output('data-table1-remessa', 'data'),
      Output('data-table1-retorno', 'data')],
@@ -269,11 +269,12 @@ def layout():
 def update_table(n_clicks_doc, numero_boleto):
     ctx = dash.callback_context
     if not numero_boleto or n_clicks_doc == 0:
-        return df_remessa1.to_dict('records'), df_retorno1.to_dict('records')
+        return df_remessa1.head(10).to_dict('records'), df_retorno1.head(10).to_dict('records')  # Exibe apenas as 5 primeiras linhas se não houver pesquisa
 
     if ctx.triggered_id == 'pesquisar-doc-button':
         resultado_pesquisa_remessa = df_remessa1[df_remessa1['CODIGO DO DOC'].astype(str) == numero_boleto]
         resultado_pesquisa_retorno = df_retorno1[df_retorno1['CODIGO DO DOC'].astype(str) == numero_boleto]
-        return resultado_pesquisa_remessa.to_dict('records'), resultado_pesquisa_retorno.to_dict('records')
+        return resultado_pesquisa_remessa.head(10).to_dict('records'), resultado_pesquisa_retorno.head(10).to_dict('records')
     else:
         raise PreventUpdate
+
