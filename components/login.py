@@ -105,8 +105,8 @@ def layout():
         ),
         html.Div([
             html.Iframe(
-                src="https://lottie.host/embed/45af3a4c-75e6-42ba-b74b-c9a98e1639a3/r2rPa6bgO4.json",
-                style={'width': '550px', 'height': '450px', 'margin': 'auto', 'padding-top': '20px', 'display': 'block'}
+            src="https://lottie.host/embed/45af3a4c-75e6-42ba-b74b-c9a98e1639a3/r2rPa6bgO4.json",
+            style={'width': '550px', 'height': '450px', 'margin': 'auto','padding-top': '20px', 'display': 'block'}
             )
         ]),
         dbc.Button('Continuar para Menu Principal', id='login', href='/home',

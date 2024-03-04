@@ -52,7 +52,6 @@ new_order = [
     'Número do banco cobrador',
     'Código agência Cobradora',
     'Espécie do boleto',
-
     'Valor de Mora dia',
     'Percentual do IOF a ser recolhido',
     'Valor do abatimento ou Valor do segundo desconto',
@@ -100,8 +99,7 @@ df_remessa1 = df_remessa1.sort_values(by='Data da Ocorrencia', ascending=True)
 consulta_retorno = "SELECT * FROM retorno_sofisa"
 df_retorno1 = pd.read_sql(consulta_retorno, con=mydb)
 
-df_retorno1['Data da geração do arquivo'] = pd.to_datetime(df_retorno1['Data da geração do arquivo'], format='%d%m%y', errors='coerce')
-df_retorno1['Data da geração do arquivo'] = df_retorno1['Data da geração do arquivo'].dt.strftime('%d/%m/%Y')
+df_retorno1['Data da ocorrência'] = pd.to_datetime(df_retorno1['Data da ocorrência'])
 
 new_order = [
     'Data da ocorrência',
@@ -177,7 +175,7 @@ new_order = [
     'Número Sequência do arquivo trailer',
     'Número Sequencial do registro do arquivo trailer',
     'Data da geração do arquivo',  
-
+    'Nome do arquivo',
 ]
 df_retorno1 = df_retorno1[new_order]
 novos_nomes = {
@@ -190,11 +188,14 @@ novos_nomes = {
 
 df_retorno1.rename(columns=novos_nomes, inplace=True)
 
-#df_retorno1 = df_retorno1.sort_values(by='Data da Ocorrencia', ascending=True)
-df_retorno1 = df_retorno1.sort_values(by=['Data da Ocorrencia', 'Número Sequência do arquivo corpo'], ascending=[True, False])
+df_retorno1 = df_retorno1.sort_values(by=['Data da Ocorrencia', 'Número Sequência do arquivo corpo'], ascending=[True, True])
 
 
 mydb.close()
+
+df_retorno1.loc[df_retorno1['Tipo de cobrança'] == '4', 'Tipo de cobrança'] = "Título Descontado"
+df_retorno1.loc[df_retorno1['Tipo de cobrança'] == '2', 'Tipo de cobrança'] = "Cobrança Vinculada"
+df_retorno1.loc[df_retorno1['Tipo de cobrança'] == '3', 'Tipo de cobrança'] = "Cobrança Caucionada"
 
 
 

@@ -105,7 +105,7 @@ df_retorno = pd.read_sql(consulta_retorno, con=mydb)
 #df_retorno = df_retorno.sort_values(by='DATA DA GERAÇÃO DO ARQUIVO', ascending=True)
 
 #df_retorno['DATA DA GERAÇÃO DO ARQUIVO'] = pd.to_datetime(df_retorno['DATA DA GERAÇÃO DO ARQUIVO'], format='%d/%m/%Y')
-df_retorno['DATA DA GERAÇÃO DO ARQUIVO'] = pd.to_datetime(df_retorno['DATA DA GERAÇÃO DO ARQUIVO'], format='%d%m%y', errors='coerce')
+df_retorno['DATA DA GERAÇÃO DO ARQUIVO'] = pd.to_datetime(df_retorno['DATA DA GERAÇÃO DO ARQUIVO'])
 
 # Ordenar o DataFrame pela coluna 'Data da Ocorrência' de forma crescente
 #df_retorno = df_retorno.sort_values(by='DATA DA GERAÇÃO DO ARQUIVO')
@@ -113,7 +113,7 @@ df_retorno = df_retorno.sort_values(by=['DATA DA GERAÇÃO DO ARQUIVO', 'SEQUENC
     
 
 new_order = [
-    'DATA DA GERAÇÃO DO ARQUIVO',
+    'DATA DA GERAÇÃO DO ARQUIVO',   
     'CÓDIGO DE MOVIMENTO',
     'CODIGO DO DOC',
     'COMPLEMENTO DO MOVIMENTO',
@@ -159,7 +159,8 @@ new_order = [
     'SEQUENCIAL DO RETORNO',
     'CÓDIGO DO BENEFICIÁRIO CABECARIO',
     'FIXO7',
-    'Identificação do Registro treiler'
+    'Identificação do Registro treiler',
+    'Nome do arquivo',
 ]
 df_retorno = df_retorno[new_order]
 
@@ -169,9 +170,9 @@ novos_nomes = {
     # ... adicione os outros nomes conforme necessário
 }
 df_retorno.rename(columns=novos_nomes, inplace=True)
-
+df_retorno.loc[df_retorno['Ocorrencia'] == 'Protesto solicitado', 'Ocorrencia'] = "Enviado a Cartorio"
 df_retorno.loc[df_retorno['Ocorrencia'] == 'Título Descontável (título com desistênc', 'Ocorrencia'] = "Devolvido"
-df_retorno.loc[df_retorno['Ocorrencia'] == 'Instrução Confirmada', 'Ocorrencia'] = "Registrado"
+df_retorno.loc[df_retorno['Ocorrencia'] == 'Instrução Confirmada', 'Ocorrencia'] = "Instrução Confirmada"
 df_retorno.loc[df_retorno['Ocorrencia'] == 'Liquidação de Título Descontado', 'Ocorrencia'] = "Liquidação de Título Trocado"
 df_retorno.loc[df_retorno['Ocorrencia'] == 'Título Descontado', 'Ocorrencia'] = "Trocado"
 df_retorno.loc[df_retorno['Ocorrencia'] == 'Pago(Título protestado pago em cartório)', 'Ocorrencia'] = "Pago em Cartório"

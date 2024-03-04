@@ -25,7 +25,7 @@ sidebar = html.Div(
             className="sidebar-header",
         ),
         html.Hr(),
-        html.P("Bem-Vindo, Eleandro!", className="welcome-text"),
+        html.P("Bem-Vindo, colega Trimed!", className="welcome-text"),
         
         dbc.Nav(
             [
@@ -160,4 +160,4 @@ def display_page(pathname):
         return ajusteboletos.layout()
     
 if __name__ == '__main__':
-    app.run_server(debug=True, use_reloader=True, host='0.0.0.0', port=8050, dev_tools_hot_reload=True)
+    app.run_server(debug=False, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)
