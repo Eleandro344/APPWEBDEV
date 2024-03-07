@@ -79,14 +79,6 @@ auth = dash_auth.BasicAuth(
 )
 
 
-def consultar_banco_de_dados():
-    # Adicione sua lógica de consulta ao banco de dados aqui
-    # Exemplo de consulta:
-    consulta_sql = 'SELECT * FROM sua_tabela'
-    mycursor.execute(consulta_sql)
-    resultado_consulta = mycursor.fetchall()
-    return resultado_consulta
-
 
 # Layout do aplicativo
 def layout():
@@ -109,7 +101,7 @@ def layout():
             style={'width': '550px', 'height': '450px', 'margin': 'auto','padding-top': '20px', 'display': 'block'}
             )
         ]),
-        dbc.Button('Continuar para Menu Principal', id='login', href='/home',
+        dbc.Button('Continuar para Menu Principal', id='/home', href='/home',
                    style={'border-width': '3px', 'font-size': '14px', 'background-color': '#008B8B',
                           'margin-left': '43%', 'margin-top': '15px', 'padding-top': '10px'}
                    ),

@@ -109,11 +109,12 @@ df_retorno['DATA DA GERAÇÃO DO ARQUIVO'] = pd.to_datetime(df_retorno['DATA DA 
 
 # Ordenar o DataFrame pela coluna 'Data da Ocorrência' de forma crescente
 #df_retorno = df_retorno.sort_values(by='DATA DA GERAÇÃO DO ARQUIVO')
-df_retorno = df_retorno.sort_values(by=['DATA DA GERAÇÃO DO ARQUIVO', 'SEQUENCIAL DO REGISTRO'], ascending=[True, False])
+df_retorno = df_retorno.sort_values(by=['DATA DA GERAÇÃO DO ARQUIVO', 'SEQUENCIAL DO REGISTRO'], ascending=[True, True])
     
 
 new_order = [
     'DATA DA GERAÇÃO DO ARQUIVO',   
+    'TIPO DE INSTRUÇÃO ORIGEM',
     'CÓDIGO DE MOVIMENTO',
     'CODIGO DO DOC',
     'COMPLEMENTO DO MOVIMENTO',
@@ -143,7 +144,6 @@ new_order = [
     'VALOR DA TARIFA',
     'DATA DE DEBITO DA TARIFA',
     'VALOR DESCONTO CONCEDIDO',
-    'TIPO DE INSTRUÇÃO ORIGEM',
     'SEQUENCIAL DO REGISTRO',
     'FIXO cabecario',
     'FIXO2 cabecario',
@@ -170,6 +170,7 @@ novos_nomes = {
     # ... adicione os outros nomes conforme necessário
 }
 df_retorno.rename(columns=novos_nomes, inplace=True)
+#df_retorno.loc[df_retorno['Ocorrencia'] == 'Protesto solicitado', 'Ocorrencia'] = "Enviado a Cartorio"
 df_retorno.loc[df_retorno['Ocorrencia'] == 'Protesto solicitado', 'Ocorrencia'] = "Enviado a Cartorio"
 df_retorno.loc[df_retorno['Ocorrencia'] == 'Título Descontável (título com desistênc', 'Ocorrencia'] = "Devolvido"
 df_retorno.loc[df_retorno['Ocorrencia'] == 'Instrução Confirmada', 'Ocorrencia'] = "Instrução Confirmada"
@@ -177,6 +178,15 @@ df_retorno.loc[df_retorno['Ocorrencia'] == 'Liquidação de Título Descontado',
 df_retorno.loc[df_retorno['Ocorrencia'] == 'Título Descontado', 'Ocorrencia'] = "Trocado"
 df_retorno.loc[df_retorno['Ocorrencia'] == 'Pago(Título protestado pago em cartório)', 'Ocorrencia'] = "Pago em Cartório"
 df_remessa.loc[df_remessa['Ocorrencia'] == 'Pedido de ', 'Ocorrencia'] = "Solicitação de Baixa"
+df_retorno.loc[df_retorno['Ocorrencia'] == 'Protesto Em cartório', 'Ocorrencia'] = "Em cartório"
+#df_remessa.loc[df_remessa['TIPO DE INSTRUÇÃO ORIGEM'] == 'Protesto Em cartório', 'TIPO DE INSTRUÇÃO ORIGEM'] = "Em cartório"
+
+condicao = (df_retorno['TIPO DE INSTRUÇÃO ORIGEM'] == 'Protestar') & (df_retorno['Ocorrencia'] == 'Instrução Confirmada')
+
+# Atualizar o valor da coluna "Ocorrencia" para "boleto protestado" onde a condição for verdadeira
+df_retorno.loc[condicao, 'Ocorrencia'] = 'Boleto Protestado'
+
+
 
 # Fechar a conexão com o banco de dados
 mydb.close()
@@ -213,7 +223,10 @@ def create_data_table(id, data):
             style_data_conditional=[
                 {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248, 248, 248)'},
             {'if': {'column_id': 'Ocorrencia'}, 'backgroundColor': '#006400', 'color': 'white'},
+            {'if': {'column_id': 'TIPO DE INSTRUÇÃO ORIGEM'}, 'backgroundColor': '#A52A2A', 'color': 'white'},
+
             {'if': {'column_id': 'CÓDIGO DE MOVIMENTO'}, 'backgroundColor': '#006400', 'color': 'white'},
+            
 
         ],
     )
