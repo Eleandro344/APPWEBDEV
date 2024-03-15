@@ -181,7 +181,7 @@ def display_page(pathname):
         return avisos.layout()
     if pathname == "/ajusteboletos":
         return ajusteboletos.layout()
-    
+
 if __name__ == '__main__':
     app.run_server(debug=False, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)
-   # app.run_server(debug=False, use_reloader=True, host='0.0.0.0', port=8040, dev_tools_hot_reload=True)
+    #app.run_server(debug=False, use_reloader=True, host='0.0.0.0', port=8040, dev_tools_hot_reload=True)
