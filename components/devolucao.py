@@ -70,7 +70,7 @@ def layout():
 
             html.Div(
                 [
-                    html.H1("Devoluções cadastradas", style={'marginBottom': '20px', 'margin-top': '10px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '20px'}),
+                    html.H1("Devoluções cadastradas", className="text-devolucao"),#style={'marginBottom': '20px', 'margin-top': '10px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '20px'}),
                     dash_table.DataTable(
                         id='client-table',
                         columns=[{'name': col, 'id': col} for col in client_df.columns],

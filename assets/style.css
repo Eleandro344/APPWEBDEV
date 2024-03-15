@@ -1,4 +1,5 @@
 /* Isto cria uma barra lateral estreita fixada à esquerda da página */
+@import url('https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700');
 .sidebar {
     position: fixed;
     top: 0;
@@ -92,4 +93,63 @@
     margin-left: 7rem;
     margin-right: 2rem;
     padding: 2rem 1rem;
+}
+
+.welcome-text{
+    font-family: Arial, Helvetica, sans-serif;    
+    font-size: 17px;
+
+}
+.sidebar-info{
+    vertical-align: middle;
+    font-family:Arial, Helvetica, sans-serif;
+    margin: left 30px; 
+    font-size: 17px;
+}
+.text-titulo{
+    font-family:'Poppins', sans-serif;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: bold;
+}
+.text-semacesso{
+    font-family:'Poppins', sans-serif;
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
+}
+.text-devolucao{
+    margin-bottom: 20px;
+    margin-top: 50px;
+    font-size: 25px;
+    font-family:'Poppins', sans-serif; 
+    font-weight: bold;
+    color: black;
+    text-align: left;
+    margin-bottom: 20px;
+
+}
+
+/* Estilos para a tabela */
+    .table-font {
+        font-family: Calibri, sans-serif; /* Aqui você pode definir a fonte desejada */
+    }
+    
+
+.text-button{
+    border-width: 3px;
+    font-size: 14px;
+    background-color:mediumturquoise;
+    color: black;
+    margin-left: 43%;
+    margin-top: 30px;
+    padding-top: 11px;
+    font-family: 'Poppins', sans-serif;
+    box-shadow:hotpink;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 1.2);
+    transition: 300ms;
+
+}   
+.text-button:hover{
+    transform: scale(0.80);
 }

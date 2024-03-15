@@ -7,6 +7,7 @@ import mysql.connector
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from app import app  # Importa o objeto app do arquivo app.py
+from dash import dcc, html
 
 # Conexão com o banco de dados
 mydb = mysql.connector.connect(
@@ -217,9 +218,9 @@ def create_data_table(id, data):
         data=data.head(10).to_dict('records'),
         columns=[{'name': col, 'id': col} for col in data.columns],
         page_size=80,
-        style_table={'overflowX': 'auto', 'width': '125%', 'margin-left': '-12%', 'margin-right': 'auto', 'z-index': '0'},
-        style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold'},
-        style_cell={'textAlign': 'left', 'minWidth': '100px', 'font-family': 'Calibri'},
+        style_table={'overflowX': 'auto', 'width': '125%', 'margin-left': '-12%', 'margin-right': 'auto', 'z-index': '0','border': 'none'},
+        style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold','color': 'Black','fontFamily': 'Arial'},
+        style_cell={'textAlign': 'left','fontSize': '15px','minWidth': '100px', 'fontFamily': 'Arial'},  # Mudança da fonte para Arial
             style_data_conditional=[
                 {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248, 248, 248)'},
             {'if': {'column_id': 'Ocorrencia'}, 'backgroundColor': '#006400', 'color': 'white'},
@@ -229,6 +230,7 @@ def create_data_table(id, data):
             
 
         ],
+        
     )
 
 def layout():
@@ -237,7 +239,7 @@ def layout():
             dbc.Col(
                 [
                     html.Img(src='/assets/unicredimagem.png', className="logo-img", style={'width': '10%', 'marginLeft': '450px','marginTop': '0px'}),
-                    html.H3("Rastreamento de Boletos Unicred", style={'marginBottom': '20px', 'margin-top': '0px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '0px'}),
+                    html.H3("Rastreamento de Boletos Unicred",className="text-titulo"),# ' style={'font':'Bahnschrift','marginBottom': '20px', 'margin-top': '0px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '0px'}),
                     dbc.Input(id='numero-boleto-input', type='text', placeholder='Digite o número do boleto'),
                     dbc.Button('Pesquisar por Nº do Documento', id='pesquisar-doc-button', n_clicks=0, color='primary', className='mr-1', style={'margin-bottom': '20px'}),
                     create_data_table('data-table-remessa3', df_remessa)

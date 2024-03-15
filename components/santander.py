@@ -223,19 +223,23 @@ df_retorno1.rename(columns=novos_nomes, inplace=True)
 def create_data_table(id, data):
     return dash_table.DataTable(
         id=id,
-        data=data.head(10).to_dict('records'),  # Exibir apenas as 5 primeiras linhas
+        data=data.head(10).to_dict('records'),
         columns=[{'name': col, 'id': col} for col in data.columns],
         page_size=80,
-        style_table={'overflowX': 'auto', 'width': '125%', 'margin-left': '-12%', 'margin-right': 'auto', 'z-index': '0'},
-        style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold'},
-        style_cell={'textAlign': 'left', 'minWidth': '100px', 'font-family': 'Calibri'},
-        style_data_conditional=[
-            {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248, 248, 248)'},
+        style_table={'overflowX': 'auto', 'width': '125%', 'margin-left': '-12%', 'margin-right': 'auto', 'z-index': '0','border': 'none'},
+        style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold','color': 'Black','fontFamily': 'Arial'},
+        style_cell={'textAlign': 'left','fontSize': '15px','minWidth': '100px', 'fontFamily': 'Arial'},  # Mudança da fonte para Arial
+            style_data_conditional=[
+                {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248, 248, 248)'},
             {'if': {'column_id': 'Ocorrencia'}, 'backgroundColor': '#006400', 'color': 'white'},
-            {'if': {'column_id': 'Ocorrencia'}, 'backgroundColor': '#006400', 'color': 'white'},
-        ],
-    )
+            {'if': {'column_id': 'TIPO DE INSTRUÇÃO ORIGEM'}, 'backgroundColor': '#A52A2A', 'color': 'white'},
 
+            {'if': {'column_id': 'CÓDIGO DE MOVIMENTO'}, 'backgroundColor': '#006400', 'color': 'white'},
+            
+
+        ],
+        
+    )
 
 def layout():
     return dbc.Container([
@@ -243,7 +247,7 @@ def layout():
             dbc.Col(
                 [
                     html.Img(src='/assets/santanderimagem.png', className="logo-img", style={'width': '15%', 'marginLeft': '500px','marginTop': '0px'}),
-                    html.H3("Rastreamento de Boletos Banco Santander", style={'marginBottom': '20px', 'margin-top': '10px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '20px'}),
+                    html.H3("Rastreamento de Boletos Banco Santander",className="text-titulo"),# style={'marginBottom': '20px', 'margin-top': '10px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '20px'}),
                     dbc.Input(id='numero-boleto-input', type='text', placeholder='Digite o número do boleto'),
                     dbc.Button('Pesquisar por Nº do Documento', id='pesquisar-doc-button', n_clicks=0, color='primary', className='mr-1', style={'margin-bottom': '20px'}),
                     create_data_table('data-table1-remessa', df_remessa1)

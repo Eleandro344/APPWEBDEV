@@ -2,15 +2,24 @@ import dash
 import pandas as pd
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from components import avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra
+from components import avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo
 from dash import Dash, dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
 from app import app  # Importa o objeto app do arquivo app.py
-
+import dash_auth
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
+import dash_auth
 import globals
 from dash import dcc
-
+from flask import request
+from components.shared_variables import username
+from dash import html, dcc, Input, Output, ctx, callback_context
+from dash.exceptions import PreventUpdate
+from flask import request
+from components.shared_variables import username
 
 
 df = pd.read_excel('C:/Users/elean/Desktop/bancodedados/docs.xlsx')
@@ -25,23 +34,23 @@ sidebar = html.Div(
             className="sidebar-header",
         ),
         html.Hr(),
-        html.P("Bem-Vindo, colega Trimed!", className="welcome-text"),
+        html.P("Bem-Vindo, colega!", className="welcome-text"),
         
         dbc.Nav(
             [
+            dbc.NavLink(
+                [
+                    html.I(className="fas fa-home me-2 fa-lg", style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                   html.Span("Home", className="sidebar-info"),
+                ],
+                href="/home",
+                active="exact",
+                className="nav-link-beat"
+            ),
                 dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2 fa-lg", style={'verticalAlign': 'middle'}),
-                        html.Span(" HOME", style={'verticalAlign': 'middle', 'marginLeft': '30px'}),
-                    ],
-                    href="/home",
-                    active="exact",
-                    className="nav-link-beat"
-                ),
-                dbc.NavLink(
-                    [
-                        html.I(className="fa-solid fa-barcode fa-lg", style={'verticalAlign': 'middle'}),
-                        html.Span(" Banco Unicred", style={'verticalAlign': 'middle', 'marginLeft': '30px'}),
+                        html.I(className="fa-solid fa-barcode fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span(" Banco Unicred",className="sidebar-info"),
                     ],
                     href="/rastrear",
                     active="exact",
@@ -49,85 +58,69 @@ sidebar = html.Div(
                 ),
                 dbc.NavLink(
                     [
-                        html.I(className="fa-solid fa-barcode fa-lg", style={'verticalAlign': 'middle'}),
-                        html.Span(" Banco Santander", style={'verticalAlign': 'middle', 'marginLeft': '30px'}),
-                    ],
+                        html.I(className="fa-solid fa-barcode fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span(" Banco Santander",className="sidebar-info"),                    ],
                     href="/santander",
                     active="exact",
                     className="nav-link-beat"
                 ),  
                 dbc.NavLink(
                     [
-                        html.I(className="fa-solid fa-barcode fa-lg", style={'verticalAlign': 'middle'}),
-                        html.Span(" Banco Sofisa", style={'verticalAlign': 'middle', 'marginLeft': '30px'}),
-                    ],
+                        html.I(className="fa-solid fa-barcode fa-lg", style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span(" Banco Sofisa",className="sidebar-info"),                    ],
                     href="/sofisa",
                     active="exact",
                     className="nav-link-beat"
                 ),   
                 dbc.NavLink(
                     [
-                        html.I(className="fa-solid fa-barcode fa-lg", style={'verticalAlign': 'middle'}),
-                        html.Span("Banco Safra", style={'verticalAlign': 'middle', 'marginLeft': '30px'}),
-                    ],
+                        html.I(className="fa-solid fa-barcode fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span(" Banco Safra",className="sidebar-info"),                    ],
                     href="/safra",
                     active="exact",
                     className="nav-link-beat"
                 ),                             
                 dbc.NavLink(    
                     [
-                        html.I(className="fa-solid fa-sack-dollar fa-lg", style={'verticalAlign': 'middle'}),
-                        html.Span(" Faturamento", style={'verticalAlign': 'middle', 'marginLeft': '30px'}),
-                    ],
+                        html.I(className="fa-solid fa-sack-dollar fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span("Faturamento",className="sidebar-info"),                    ],
                     href="/faturamento",
                     active="exact",
                     className="nav-link-beat"
                 ),
                 dbc.NavLink(
                     [
-                        html.I(className="fa-solid fa-building-columns fa-lg", style={'verticalAlign': 'middle'}),
-                        html.Span("Banco", style={'verticalAlign': 'middle', 'marginLeft': '30px'}),
-                    ],
+                        html.I(className="fa-solid fa-building-columns fa-lg", style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span("Banco ",className="sidebar-info"),                    ],
                     href="/banco",
                     active="exact",
                     className="nav-link-beat"
                 ),
                     dbc.NavLink(
                     [
-                    html.I(className="fa-solid fa-truck-fast fa-lg", style={'verticalAlign': 'middle'}),
-                    html.Span(" Cadastrar devoluções", style={'verticalAlign': 'middle', 'marginLeft': '0px'}),
-                    ],
+                    html.I(className="fa-solid fa-truck-fast fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                    html.Span("Devoluções",className="sidebar-info"),                    ],
                     href="/devolucao",
                     active="exact",
                     className="nav-link-beat"
                 ),
                     dbc.NavLink(
                     [
-                    html.I(className="fa-solid fa-file-circle-exclamation fa-lg", style={'verticalAlign': 'middle'}),
-                    html.Span("Titulos com Problema", style={'verticalAlign': 'middle', 'marginLeft': '0px'}),
-                    ],
+                    html.I(className="fa-solid fa-file-circle-exclamation fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                    html.Span("Titulos com Problema",className="sidebar-info"),                    ],
                     href="/ajusteboletos",
                     active="exact",
                     className="nav-link-beat"
                 ),
                     dbc.NavLink(
                     [
-                    html.I(className="fa-solid fa-file-circle-exclamation fa-lg", style={'verticalAlign': 'middle'}),
-                    html.Span("login", style={'verticalAlign': 'middle', 'marginLeft': '0px'}),
-                    ],
+                    html.I(className="fa-solid fa-user fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                    html.Span("Login",className="sidebar-info"),                    ],
                     href="/login",
                     active="exact",
-                    className="nav-link-beat"
-                ),  
-                dbc.NavLink(
-                    [
-                        #html.I(className="fa-solid fa-barcode fa-lg", style={'verticalAlign': 'middle'}),
-                        #html.Span("Banco Safra", style={'verticalAlign': 'middle', 'marginLeft': '30px'}),
-                    ],
-                    href="/avisos",
-                    active="exact",
-                    className="nav-link-beat"
-                ),                                                                     
+                    className="nav-link-beat",
+                    #active_style={"color": "white"},  # Definindo a cor branca quando ativo
+                ),                                                                      
                 html.Div(id='open-new-tab'),              
             ],
             vertical=True,
@@ -139,6 +132,7 @@ sidebar = html.Div(
 )
 
 home_layout = home.layout()
+semacesso_layout = semacesso.layout()
 faturamento_layout = faturamento.layout()
 banco_layout = banco.layout()
 login_layout = login.layout()
@@ -148,6 +142,7 @@ ajusteboletoslayout = ajusteboletos.layout()
 sofisa_layout = sofisa.layout()
 safra_layout = safra.layout()
 avisos_layout = avisos.layout()
+bemvindo_layout = bemvindo.layout(username=username) 
 
 app.layout = html.Div([
     sidebar,
@@ -157,31 +152,73 @@ app.layout = html.Div([
     ], className="content"),
 ])
 
+
+
+
+# Dados de autenticação
+VALID_USERNAME_PASSWORD_PAIRS = {
+    'eleandro': '2323',
+    'antonio':'2024',
+    'lucimara':'2024',
+}
+
+# Definindo permissões
+PERMISSIONS = {
+    'eleandro': 0,
+    'anotonio': 1,
+    'lucimara': 1,    
+}
+auth = dash_auth.BasicAuth(app, VALID_USERNAME_PASSWORD_PAIRS)
+
+# Função para verificar as permissões e redirecionar conforme necessário
+def check_permission(username, pathname):
+    if username in PERMISSIONS:
+        user_permission = PERMISSIONS[username]
+        if user_permission == 1 and pathname == "/faturamento":            
+            return "/semacesso"  # Redireciona usuários com permissão 1 da página de faturamento para a página inicial
+    return pathname
+
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def display_page(pathname):
-    if pathname == '/' or pathname == "/login":
-        return avisos.layout()   
-    if pathname == "/faturamento":
-        return faturamento.layout()
-    if pathname == "/home":
-        return home.layout()
-    if pathname == "/devolucao":
-        return devolucao.layout()    
-    if pathname == "/banco":
-        return banco.layout()       
-    if pathname == "/santander":
-        return santander.layout()    
-    if pathname == "/safra":
-        return safra.layout()    
-    if pathname == "/sofisa":
-        return sofisa.layout()      
-    if pathname == "/rastrear":
-        return rastrear.layout()
-    if pathname == "/safra":
-        return avisos.layout()
-    if pathname == "/ajusteboletos":
-        return ajusteboletos.layout()
+    auth = request.authorization
+    if auth:
+        username = auth.username
+    else:
+        return dcc.Location(id="url", pathname="/bemvindo", refresh=True)
+    if username:
+        print("Usuário logado:", username)  # Imprime o nome de usuário que foi logado
+        pathname = check_permission(username, pathname)
+        if pathname == '/' or pathname == "/login":
+            return dcc.Location(id="url", pathname="/bemvindo", refresh=True)  # Redireciona usuários já autenticados para a página inicial
+        elif pathname == "/faturamento":
+            return faturamento.layout()
+        elif pathname == "/login":
+            return login.layout()
+        elif pathname == "/bemvindo":
+            return bemvindo.layout(username=username)      
+        elif pathname == "/home":
+            return home.layout()
+        elif pathname == "/devolucao":
+            return devolucao.layout()
+        elif pathname == "/banco":
+            return banco.layout()
+        elif pathname == "/santander":
+            return santander.layout()
+        elif pathname == "/semacesso":
+            return semacesso.layout()
+        elif pathname == "/safra":
+            return safra.layout()
+        elif pathname == "/sofisa":
+            return sofisa.layout()
+        elif pathname == "/rastrear":
+            return rastrear.layout()
+        elif pathname == "/avisos":
+            return avisos.layout()
+        elif pathname == "/ajusteboletos":
+            return ajusteboletos.layout()
+    else:
+        return dcc.Location(id="url", pathname="/login", refresh=True)
 
 if __name__ == '__main__':
     app.run_server(debug=False, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)
-    #app.run_server(debug=False, use_reloader=True, host='0.0.0.0', port=8040, dev_tools_hot_reload=True)
+  #  app.run_server(debug=True, use_reloader=True, host='0.0.0.0', port=8020, dev_tools_hot_reload=True)
