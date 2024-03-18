@@ -153,3 +153,34 @@
 .text-button:hover{
     transform: scale(0.80);
 }
+.text-user {
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+    position: absolute;
+    top: 150px;
+    right: 110px;
+    color: #222222;
+    float: right;
+    font-size: 16px;
+    font-weight: 600;
+    transition: transform 0.3s ease; /* Define transition properties */
+}
+
+
+
+.text-user:hover {
+    color:black; /* Change color on hover */
+    cursor: pointer; /* Change cursor to pointer on hover */
+    transform: rotate(50deg); /* Rotate the text 360 degrees on hover */
+    cursor: pointer; 
+}
+.mr-1{
+    transition: 300ms;
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+}
+.mr-1:hover {
+    transform: scale(0.90);
+
+}

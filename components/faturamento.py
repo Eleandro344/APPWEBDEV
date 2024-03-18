@@ -219,7 +219,7 @@ def layout():
     return dbc.Container([
     dbc.Row([
         dbc.Col(
-            html.H3('Auditoria de Boletos', style={'margin-top': '10px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '20px'}),
+            html.H3('Auditoria de Boletos', className='text-titulo',style={'margin-top': '50px'}),
         ),
         dbc.Col(
             dcc.DatePickerRange(
@@ -239,10 +239,10 @@ def layout():
                 data=faturamento.to_dict('records'),
                 columns=[{'name': col, 'id': col} for col in faturamento.columns],
                 # page_size=10,  # Defina o número de linhas por página
-                style_table={'overflowX': 'auto', 'width': '100%', 'margin-left': '-30px', 'z-index': '0'},  # Adiciona rolagem horizontal, define a largura para 100% e move para a esquerda
-                style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold'},  # Estilo do cabeçalho
-                style_cell={'textAlign': 'left', 'minWidth': '100px', 'font-family': 'Calibri'},  # Estilo das células
-                style_data_conditional=[
+                style_table={'overflowX': 'auto', 'width': '125%', 'margin-top':'30px','margin-left': '-15%', 'margin-right': 'auto', 'z-index': '0','border': 'none'},
+                style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold','color': 'Black','fontFamily': 'Arial'},
+                style_cell={'textAlign': 'left','fontSize': '15px','minWidth': '100px', 'fontFamily': 'Arial'}, # Estilo das células
+                        style_data_conditional=[
                     {  'if': {'row_index': 'odd'},
                        'backgroundColor': 'rgb(248, 248, 248)',
                     },

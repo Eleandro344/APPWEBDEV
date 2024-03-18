@@ -160,13 +160,22 @@ VALID_USERNAME_PASSWORD_PAIRS = {
     'eleandro': '2323',
     'antonio':'2024',
     'lucimara':'2024',
+    'taiane':'2024',
+    'douglas':'2024',
+    'caue':'2024',
+
+
+
 }
 
 # Definindo permissões
 PERMISSIONS = {
     'eleandro': 0,
-    'anotonio': 1,
-    'lucimara': 1,    
+    'antonio': 1,
+    'lucimara': 1,
+    'taiane': 2, 
+    'douglas':1,
+    'caue':2,   
 }
 auth = dash_auth.BasicAuth(app, VALID_USERNAME_PASSWORD_PAIRS)
 
@@ -174,7 +183,9 @@ auth = dash_auth.BasicAuth(app, VALID_USERNAME_PASSWORD_PAIRS)
 def check_permission(username, pathname):
     if username in PERMISSIONS:
         user_permission = PERMISSIONS[username]
-        if user_permission == 1 and pathname == "/faturamento":            
+        if user_permission == 1 and (pathname == "/faturamento" or pathname == "/banco"):       
+            return "/semacesso"  # Redireciona usuários com permissão 1 da página de faturamento para a página inicial
+        if user_permission == 2 and (pathname == "/devolucao" or pathname == "/banco"):
             return "/semacesso"  # Redireciona usuários com permissão 1 da página de faturamento para a página inicial
     return pathname
 

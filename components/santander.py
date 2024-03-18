@@ -249,7 +249,7 @@ def layout():
                     html.Img(src='/assets/santanderimagem.png', className="logo-img", style={'width': '15%', 'marginLeft': '500px','marginTop': '0px'}),
                     html.H3("Rastreamento de Boletos Banco Santander",className="text-titulo"),# style={'marginBottom': '20px', 'margin-top': '10px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '20px'}),
                     dbc.Input(id='numero-boleto-input', type='text', placeholder='Digite o número do boleto'),
-                    dbc.Button('Pesquisar por Nº do Documento', id='pesquisar-doc-button', n_clicks=0, color='primary', className='mr-1', style={'margin-bottom': '20px'}),
+                    dbc.Button('Pesquisar por Nº do Documento', id='pesquisar-doc-button', n_clicks=0, color='primary', className='mr-1'),#)style={'margin-bottom': '20px'}),
                     create_data_table('data-table1-remessa', df_remessa1)
                 ]
             )
