@@ -52,7 +52,6 @@ new_order = [
     'Número do banco cobrador',
     'Código agência Cobradora',
     'Espécie do boleto',
-
     'Valor de Mora dia',
     'Percentual do IOF a ser recolhido',
     'Valor do abatimento ou Valor do segundo desconto',
@@ -108,12 +107,8 @@ df_retorno1 = pd.read_sql(consulta_retorno, con=mydb)
 df_retorno1['Data da ocorrência'] = pd.to_datetime(df_retorno1['Data da ocorrência'])
 df_retorno1 = df_retorno1.sort_values(by='Data da ocorrência')
 
-#df_retorno1['Data da ocorrência']= df_retorno1['Data da ocorrência'].dt.strftime('%d/%m/%Y')
 
 mydb.close()
-
-#df_retorno1['Data da ocorrência'] = df_retorno1['Data da ocorrência'].dt.strftime('%d/%m/%Y')
-
 
 new_order = [
     'Data da ocorrência', 
@@ -198,25 +193,6 @@ novos_nomes = {
     'Código movimento retorno': 'Ocorrencia',
 }
 df_retorno1.rename(columns=novos_nomes, inplace=True)
-
-
-
-
-# Convertendo a coluna de datas para o tipo datetime
-#df_retorno1['Data da Ocorrencia'] = pd.to_datetime(df_retorno1['Data da Ocorrencia'], format='%d/%m/%Y')
-
-# Ordenando o DataFrame pela coluna de datas
-#df_retorno1 = df_retorno1.sort_values(by='Data da Ocorrencia')
-
-
-
-
-
-
-
-
-# Formatar a coluna 'Data da Ocorrencia' no novo formato desejado
-
 
 
 

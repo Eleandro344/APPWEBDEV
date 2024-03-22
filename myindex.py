@@ -2,7 +2,7 @@ import dash
 import pandas as pd
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from components import avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo
+from components import avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo,cemapaga
 from dash import Dash, dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
@@ -40,8 +40,8 @@ sidebar = html.Div(
             [
             dbc.NavLink(
                 [
-                    html.I(className="fas fa-home me-2 fa-lg", style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
-                   html.Span("Home", className="sidebar-info"),
+                html.I(className="fas fa-home me-2 fa-lg", style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                html.Span("Home", className="sidebar-info"),
                 ],
                 href="/home",
                 active="exact",
@@ -88,6 +88,14 @@ sidebar = html.Div(
                     active="exact",
                     className="nav-link-beat"
                 ),
+                dbc.NavLink(    
+                    [
+                        html.I(className="fa-solid fa-comments-dollar fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span("Cema Paga",className="sidebar-info"),                    ],
+                    href="/cemapaga",
+                    active="exact",
+                    className="nav-link-beat"
+                ),            
                 dbc.NavLink(
                     [
                         html.I(className="fa-solid fa-building-columns fa-lg", style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
@@ -130,7 +138,7 @@ sidebar = html.Div(
     ],
     className="sidebar",
 )
-
+cemapaga_layout = cemapaga.layout()
 home_layout = home.layout()
 semacesso_layout = semacesso.layout()
 faturamento_layout = faturamento.layout()
@@ -227,9 +235,11 @@ def display_page(pathname):
             return avisos.layout()
         elif pathname == "/ajusteboletos":
             return ajusteboletos.layout()
+        elif pathname == "/cemapaga":
+            return  cemapaga.layout()
     else:
         return dcc.Location(id="url", pathname="/login", refresh=True)
 
 if __name__ == '__main__':
-    app.run_server(debug=False, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)
-  #  app.run_server(debug=True, use_reloader=True, host='0.0.0.0', port=8020, dev_tools_hot_reload=True)
+   # app.run_server(debug=False, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)
+   app.run_server(debug=True, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)

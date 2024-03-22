@@ -9,6 +9,10 @@ import mysql.connector
 from components.shared_variables import username
 
 app.title = 'Trimed Financ'
+favicon = 'money_upico.ico'
+
+
+app.server.favicon = favicon
 
 
 
