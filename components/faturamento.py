@@ -205,6 +205,8 @@ faturamento.loc[faturamento['CET'] == '0.00%', 'Taxa de boleto']= "Falta"
 faturamento.loc[faturamento['CET'] == '0.00%', 'Deságio']= "Falta"
 faturamento.loc[faturamento['CET'] == '0.00%', 'IOF']= "Falta"
 faturamento.loc[faturamento['CET'] == '0.00%', 'CET']= "Falta"
+
+
 faturamento['Data']=dt.datetime.now() 
 hoje.strftime("%d/%m/%Y")
 # Formatando a coluna 'Data' no formato 'dd/mm/yyyy'

@@ -12,6 +12,7 @@ import locale
 from datetime import date
 from app import app  # Importa o objeto app do arquivo app.py
 from datetime import datetime
+from components.cancelados_santander import df_ordenadosantander
 
 import mysql.connector
 import pandas as pd
@@ -54,7 +55,7 @@ linhas_pedido_baixa = remessa.loc[remessa['Identificação da Ocorrência'] == '
 
 
 #REMESSA
-linhas_pedido_baixa = linhas_pedido_baixa[['Data da Gravação do Arquivo','Valor do Título','Nome/Razão Social do Pagador','Identificação da Ocorrência','CODIGO DO DOC','Data de vencimento do Título']]
+linhas_pedido_baixa = linhas_pedido_baixa[['Data da Gravação do Arquivo','Nome do Banco por Extenso','Valor do Título','Nome/Razão Social do Pagador','Identificação da Ocorrência','CODIGO DO DOC','Data de vencimento do Título']]
 numero_de_docs  = linhas_pedido_baixa['CODIGO DO DOC']
 docs_filtrados = retorno[retorno['CODIGO DO DOC'].isin(numero_de_docs)]
 docs_filtrados['DATA DA GERAÇÃO DO ARQUIVO'] = pd.to_datetime(docs_filtrados['DATA DA GERAÇÃO DO ARQUIVO'])
@@ -70,7 +71,13 @@ docs_mais_recentes = df_sorted.loc[indices_mais_recentes]
 
 resultado_merge = pd.merge(linhas_pedido_baixa, docs_mais_recentes, on='CODIGO DO DOC', how='inner')
 
-data_de_hoje = datetime.now().strftime('%d/%m/%y')
+from datetime import datetime, timedelta
+data_de_hoje = datetime.now()
+
+
+data_de_hoje = data_de_hoje - timedelta(days=5)
+
+data_de_hoje = data_de_hoje.strftime('%d/%m/%y') 
 
 resultado_merge['Data de vencimento do Título'] = pd.to_datetime(resultado_merge['Data de vencimento do Título'], format='%d/%m/%y')
 resultado_merge = resultado_merge[resultado_merge['Data de vencimento do Título'] >= data_de_hoje]
@@ -80,7 +87,7 @@ df_ordenado = resultado_merge.sort_values(by='Data de vencimento do Título')
 df_ordenado['Data da Gravação do Arquivo'] = pd.to_datetime(df_ordenado['Data da Gravação do Arquivo'], format='%d%m%y', errors='coerce')
 
 # Formatar a coluna 'Data da Ocorrencia' no novo formato desejado
-df_ordenado['Data da Gravação do Arquivo'] = df_ordenado['Data da Gravação do Arquivo'].dt.strftime('%d/%m/%Y')
+#df_ordenado['Data da Gravação do Arquivo'] = df_ordenado['Data da Gravação do Arquivo'].dt.strftime('%d/%m/%Y')
 df_ordenado.loc[df_ordenado['Identificação da Ocorrência'] == 'Pedido de ', 'Identificação da Ocorrência'] = "Solicitado Baixa"
 df_ordenado['Ordem'] = "Cema Paga"
 novos_nomes = {
@@ -90,6 +97,7 @@ novos_nomes = {
     'DATA DA GERAÇÃO DO ARQUIVO': 'Ultima ocorrencia',
     'TIPO DE INSTRUÇÃO ORIGEM': 'Instrução de Origem',
     'CÓDIGO DE MOVIMENTO':'Status Atual',
+    'Nome do Banco por Extenso':'Banco',
     
     # ... adicione os outros nomes conforme necessário
 }
@@ -110,9 +118,11 @@ condicao = (df_ordenado['Instrução de Origem'] == 'Protestar') & (df_ordenado[
 # Atualizar o valor da coluna "Ocorrencia" para "boleto protestado" onde a condição for verdadeira
 df_ordenado.loc[condicao, 'Status Atual'] = 'Boleto Protestado'
 df_ordenado = df_ordenado.drop(columns=['Instrução de Origem'])
+df_ordenado.loc[df_ordenado['Status Atual'] == 'Liquidação de Título Trocado', 'Ordem'] = "Não pagar"
 
+df_ordenado = pd.concat([df_ordenado, df_ordenadosantander], ignore_index=True)
 
-
+df_ordenado = df_ordenado.sort_values(by='Vencimento')
 #df_ordenado['Vencimento'] = df_ordenado['Vencimento'].apply(lambda x: x.strftime("%d/%m/%Y"))
 
 def layout():
@@ -146,19 +156,36 @@ def layout():
                     },
                        {
                          'if': {'column_id': 'Ordem'},
-                        'backgroundColor': 'green',
-                        'color': 'white',
-                    },
-                    {
-                        'if': {'column_id': 'Vencimento'},
                         'backgroundColor': 'red',
                         'color': 'white',
                     },
+                   # {
+                    #    'if': {'column_id': 'Vencimento'},
+                     #   'backgroundColor': 'Goldenrod',
+                      #  'color': 'white',
+                    #},
                     {
-                        'if': {'column_id': 'Status Atual'},
-                        'backgroundColor': 'Aquamarine',
-                        'color': 'Black',
-                    },
+                         'if': {'column_id': 'Status Atual'},
+                        'backgroundColor': 'red',
+                        'color': 'white',
+                    },   
+                {
+                    'if': {'column_id': 'Status Atual', 'filter_query': '{Status Atual} eq "Liquidação de Título Trocado"'},
+                    'backgroundColor': 'ForestGreen',
+                    'color': 'white',
+                },
+                  {
+                'if': {'column_id': 'Status Atual', 'filter_query': '{Status Atual} eq "Boleto Baixado Conforme Instrução"'},
+                'backgroundColor': 'ForestGreen',
+                'color': 'white',
+            },
+                              {
+                'if': {'column_id': 'Ordem', 'filter_query': '{Ordem} eq "Não pagar"'},
+                'backgroundColor': 'ForestGreen',
+                'color': 'white',
+            },                   
+
+
                 ],
             ),
         ),

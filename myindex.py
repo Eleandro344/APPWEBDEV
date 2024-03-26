@@ -241,5 +241,5 @@ def display_page(pathname):
         return dcc.Location(id="url", pathname="/login", refresh=True)
 
 if __name__ == '__main__':
-   # app.run_server(debug=False, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)
-   app.run_server(debug=True, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)
+    app.run_server(debug=False, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)
+   #app.run_server(debug=True, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)
