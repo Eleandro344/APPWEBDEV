@@ -184,3 +184,14 @@
     transform: scale(0.90);
 
 }
+.text-ia{
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+    position: absolute;
+    color: #222222;
+    float: right;
+    font-size: 16px;
+    font-weight: 600;
+    transition: transform 0.3s ease; 
+
+}

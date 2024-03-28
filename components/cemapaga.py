@@ -13,6 +13,9 @@ from datetime import date
 from app import app  # Importa o objeto app do arquivo app.py
 from datetime import datetime
 from components.cancelados_santander import df_ordenadosantander
+from components.sofisa_cancelados import dfcanceladosofisa
+from components.safra_cancelados import cancelados_safra
+from components.antecipacao import df_antecipacao
 
 import mysql.connector
 import pandas as pd
@@ -121,6 +124,18 @@ df_ordenado = df_ordenado.drop(columns=['Instrução de Origem'])
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Liquidação de Título Trocado', 'Ordem'] = "Não pagar"
 
 df_ordenado = pd.concat([df_ordenado, df_ordenadosantander], ignore_index=True)
+df_ordenado = pd.concat([df_ordenado, dfcanceladosofisa], ignore_index=True)
+df_ordenado = pd.concat([df_ordenado,cancelados_safra],ignore_index=True)
+
+#df_ordenado['Nome/Razão Social do Pagador'] = df_antecipacao['Nome/Razão Social do Pagador'].str.strip()
+
+df_ordenado['Nome/Razão Social do Pagador'] = df_antecipacao['Nome/Razão Social do Pagador'].str.replace('     ', '')
+
+df_antecipacao['Nome/Razão Social do Pagador'] = df_antecipacao['Nome/Razão Social do Pagador'].str.upper()
+
+df_ordenado = pd.merge(df_ordenado, df_antecipacao, on='Nome/Razão Social do Pagador', how='left')
+#print(df_ordenado)
+
 
 df_ordenado = df_ordenado.sort_values(by='Vencimento')
 #df_ordenado['Vencimento'] = df_ordenado['Vencimento'].apply(lambda x: x.strftime("%d/%m/%Y"))
@@ -169,6 +184,11 @@ def layout():
                         'backgroundColor': 'red',
                         'color': 'white',
                     },   
+                    {
+                         'if': {'column_id': 'IA'},
+                        'backgroundColor': 'LightCyan',
+                        'color': 'black',
+                    },                       
                 {
                     'if': {'column_id': 'Status Atual', 'filter_query': '{Status Atual} eq "Liquidação de Título Trocado"'},
                     'backgroundColor': 'ForestGreen',
@@ -185,9 +205,14 @@ def layout():
                 'color': 'white',
             },                   
 
-
+    
                 ],
+
             ),
         ),
     ]),
+        dbc.Col(
+            html.H3('(IA) Probabilidade de antecipação do titulo pelo Pagador', className='text-ia',style={'margin-top': '50px'}),
+        ),
     ])
+

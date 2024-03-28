@@ -26,9 +26,9 @@ def layout():
         html.Div("Bem-vindo,olaaa usuário", style={'position': 'absolute', 'top': '10px', 'right': '10px', 'font-size': '16px', 'color': 'black'}),
         html.Div([
             html.Iframe(
-                src="https://lottie.host/embed/45af3a4c-75e6-42ba-b74b-c9a98e1639a3/r2rPa6bgO4.json",
+                src="https://lottie.host/embed/299f41f5-0bd5-46e6-9aec-06fb86fc4d6b/G0XK8lIPMb.json",
                 style={'width': '550px', 'height': '450px', 'margin': 'auto', 'padding-top': '20px', 'display': 'block'}
-            )
+            )#<iframe src="https://lottie.host/embed/299f41f5-0bd5-46e6-9aec-06fb86fc4d6b/G0XK8lIPMb.json"></iframe>
         ]),
         dbc.Button('Continuar para Menu Principal', id='/home', href='/home',
                    style={'border-width': '3px', 'font-size': '14px', 'background-color': '#008B8B',
