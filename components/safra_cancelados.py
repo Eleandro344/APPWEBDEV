@@ -39,7 +39,7 @@ remessa['CODIGO DO DOC'] = remessa['CODIGO DO DOC'].astype(int)
 
 retorno['CODIGO DO DOC'] = retorno['CODIGO DO DOC'].astype(int)
 linhas_pedido_baixa = remessa.loc[remessa['Cod. Ocorrência'] == 'PEDIDO DE BAIXA']
-linhas_pedido_baixa = linhas_pedido_baixa[['Data da Gravação do Arquivo','Nome Do Pagador','Cod. Ocorrência','CODIGO DO DOC','Vencimento']]
+linhas_pedido_baixa = linhas_pedido_baixa[['Data da Gravação do Arquivo','Nome Do Pagador','Número de Inscrição do Pagador','Cod. Ocorrência','CODIGO DO DOC','Vencimento']]
 numero_de_docs  = linhas_pedido_baixa['CODIGO DO DOC']
 docs_filtrados = retorno[retorno['CODIGO DO DOC'].isin(numero_de_docs)]
 docs_filtrados = docs_filtrados[['CODIGO DO DOC','Data Da Ocorrência No Banco','Nome Do Banco Por Extenso','Valor Título','Identifica  o Da Ocorrência (Retorno)']]
@@ -71,7 +71,7 @@ novos_nomes = {
     'Nome Do Banco Por Extenso':'Banco',
     'Valor Título':'Valor do Título',
     'Nome Do Pagador':'Nome/Razão Social do Pagador',
-
+    'Número de Inscrição do Pagador':'CNPJ',
 
     
     # ... adicione os outros nomes conforme necessário

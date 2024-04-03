@@ -199,6 +199,13 @@ df_retorno1.loc[df_retorno1['Tipo de cobrança'] == '3', 'Tipo de cobrança'] = 
 
 
 
+df_retorno1.loc[df_retorno1['Ocorrencia'] == '28', 'Ocorrencia'] = "Débito de Tarifas/Custas – Correspondentes"
+df_retorno1.loc[df_retorno1['Ocorrencia'] == '23', 'Ocorrencia'] = "Título enviado para cartório"
+df_retorno1.loc[df_retorno1['Ocorrencia'] == '43', 'Ocorrencia'] = "Baixado por ter sido protestado"
+
+
+
+
 # Formatar a coluna 'Data da Ocorrencia' no novo formato desejado
 
 

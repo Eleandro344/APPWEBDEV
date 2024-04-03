@@ -43,7 +43,7 @@ remessa['CODIGO DO DOC'] = remessa['CODIGO DO DOC'].astype(int)
 
 retorno['CODIGO DO DOC'] = retorno['CODIGO DO DOC'].astype(int)
 linhas_pedido_baixa = remessa.loc[remessa['Código de movimento remessa'] == 'Solicitaçã']
-linhas_pedido_baixa = linhas_pedido_baixa[['Data da Gravação do Arquivo','Código de movimento remessa','CODIGO DO DOC','Data de vencimento do boleto']]
+linhas_pedido_baixa = linhas_pedido_baixa[['Data da Gravação do Arquivo','Número de inscrição do Pagador','Código de movimento remessa','CODIGO DO DOC','Data de vencimento do boleto']]
 numero_de_docs  = linhas_pedido_baixa['CODIGO DO DOC']
 docs_filtrados = retorno[retorno['CODIGO DO DOC'].isin(numero_de_docs)]
 docs_filtrados['Data da ocorrência'] = pd.to_datetime(docs_filtrados['Data da ocorrência'])
@@ -87,6 +87,7 @@ novos_nomes = {
     'Nome do banco':'Banco',
     'Valor nominal do boleto':'Valor do Título',
     'Nome do Pagador':'Nome/Razão Social do Pagador',
+    'Número de inscrição do Pagador':'CNPJ'
 
 
     

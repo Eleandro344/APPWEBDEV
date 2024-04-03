@@ -58,7 +58,7 @@ linhas_pedido_baixa = remessa.loc[remessa['Identificação da Ocorrência'] == '
 
 
 #REMESSA
-linhas_pedido_baixa = linhas_pedido_baixa[['Data da Gravação do Arquivo','Nome do Banco por Extenso','Valor do Título','Nome/Razão Social do Pagador','Identificação da Ocorrência','CODIGO DO DOC','Data de vencimento do Título']]
+linhas_pedido_baixa = linhas_pedido_baixa[['Data da Gravação do Arquivo','Nº Inscrição do Pagador','Nome do Banco por Extenso','Valor do Título','Nome/Razão Social do Pagador','Identificação da Ocorrência','CODIGO DO DOC','Data de vencimento do Título']]
 numero_de_docs  = linhas_pedido_baixa['CODIGO DO DOC']
 docs_filtrados = retorno[retorno['CODIGO DO DOC'].isin(numero_de_docs)]
 docs_filtrados['DATA DA GERAÇÃO DO ARQUIVO'] = pd.to_datetime(docs_filtrados['DATA DA GERAÇÃO DO ARQUIVO'])
@@ -81,9 +81,11 @@ data_de_hoje = datetime.now()
 data_de_hoje = data_de_hoje - timedelta(days=5)
 
 data_de_hoje = data_de_hoje.strftime('%d/%m/%y') 
-
 resultado_merge['Data de vencimento do Título'] = pd.to_datetime(resultado_merge['Data de vencimento do Título'], format='%d/%m/%y')
 resultado_merge = resultado_merge[resultado_merge['Data de vencimento do Título'] >= data_de_hoje]
+
+
+
 df_ordenado = resultado_merge.sort_values(by='Data de vencimento do Título')
 #df_ordenado['Data da Gravação do Arquivo'] = pd.to_datetime(df_ordenado['Data da Gravação do Arquivo'])
 # Converter a coluna 'Data da Ocorrencia' para o formato de data do pandas
@@ -101,6 +103,7 @@ novos_nomes = {
     'TIPO DE INSTRUÇÃO ORIGEM': 'Instrução de Origem',
     'CÓDIGO DE MOVIMENTO':'Status Atual',
     'Nome do Banco por Extenso':'Banco',
+    'Nº Inscrição do Pagador':'CNPJ',
     
     # ... adicione os outros nomes conforme necessário
 }
@@ -129,16 +132,37 @@ df_ordenado = pd.concat([df_ordenado,cancelados_safra],ignore_index=True)
 
 #df_ordenado['Nome/Razão Social do Pagador'] = df_antecipacao['Nome/Razão Social do Pagador'].str.strip()
 
-df_ordenado['Nome/Razão Social do Pagador'] = df_antecipacao['Nome/Razão Social do Pagador'].str.replace('     ', '')
+#df_ordenado['Nome/Razão Social do Pagador'] = df_antecipacao['Nome/Razão Social do Pagador'].str.replace('     ', '')
 
-df_antecipacao['Nome/Razão Social do Pagador'] = df_antecipacao['Nome/Razão Social do Pagador'].str.upper()
+df_ordenado['Nome/Razão Social do Pagador'] = df_ordenado['Nome/Razão Social do Pagador'].str.lower()
+df_ordenado['CNPJ'] = df_ordenado['CNPJ'].astype(str)
+#
+df_ordenado = pd.merge(df_ordenado, df_antecipacao, on='CNPJ', how='left')
 
-df_ordenado = pd.merge(df_ordenado, df_antecipacao, on='Nome/Razão Social do Pagador', how='left')
-#print(df_ordenado)
+
+
+
+
+
+
 
 
 df_ordenado = df_ordenado.sort_values(by='Vencimento')
 #df_ordenado['Vencimento'] = df_ordenado['Vencimento'].apply(lambda x: x.strftime("%d/%m/%Y"))
+
+
+# Obtendo a data de hoje
+data_de_hoje = datetime.now()
+
+# Adicionando um dia à data de hoje
+data_de_hoje_mais_um_dia = data_de_hoje + timedelta(days=0)
+
+# Convertendo a data para o formato desejado ('%Y-%m-%d')
+data_de_hoje_mais_um_dia_formatada = data_de_hoje_mais_um_dia.strftime('%Y-%m-%d')
+
+df_ordenado['Vencimento'] = df_ordenado['Vencimento'].astype(str)
+
+df_ordenado.loc[df_ordenado['IA'].isna(), 'IA'] = '0,0 %'
 
 def layout():
     return dbc.Container([
@@ -203,9 +227,14 @@ def layout():
                 'if': {'column_id': 'Ordem', 'filter_query': '{Ordem} eq "Não pagar"'},
                 'backgroundColor': 'ForestGreen',
                 'color': 'white',
-            },                   
+            },  
+            {
+                'if': {'column_id': 'Vencimento', 'filter_query': '{Vencimento} eq "' + data_de_hoje_mais_um_dia_formatada  + '"'},
+                'backgroundColor': 'yellow',
+                'color': 'black',
+            },                             
 
-    
+
                 ],
 
             ),
