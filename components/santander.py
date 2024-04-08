@@ -7,6 +7,8 @@ import mysql.connector
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from app import app  # Importa o objeto app do arquivo app.py
+from components.bancodedados import remessaantader_bd
+from components.bancodedados import retornosantander_bd
 
 # Conexão com o banco de dados
 mydb = mysql.connector.connect(
@@ -17,8 +19,8 @@ mydb = mysql.connector.connect(
 )
 
 # Consulta na tabela unicredremessa
-consulta_remessa = "SELECT * FROM remessa_santander"
-df_remessa1 = pd.read_sql(consulta_remessa, con=mydb)
+
+df_remessa1 = remessaantader_bd
 
 new_order = [
     'Data da Gravação do Arquivo',
@@ -98,10 +100,8 @@ df_remessa1 = df_remessa1.sort_values(by='Data da Ocorrencia', ascending=True)
 
 
 
-consulta_retorno = "SELECT * FROM retorno_santander"
 
-df_retorno1 = pd.read_sql(consulta_retorno, con=mydb)
-
+df_retorno1 = retornosantander_bd
 
 
 df_retorno1['Data da ocorrência'] = pd.to_datetime(df_retorno1['Data da ocorrência'])
@@ -199,7 +199,7 @@ df_retorno1.rename(columns=novos_nomes, inplace=True)
 def create_data_table(id, data):
     return dash_table.DataTable(
         id=id,
-        data=data.head(10).to_dict('records'),
+        data=data.to_dict('records'),
         columns=[{'name': col, 'id': col} for col in data.columns],
         page_size=80,
         style_table={'overflowX': 'auto', 'width': '125%', 'margin-left': '-12%', 'margin-right': 'auto', 'z-index': '0','border': 'none'},

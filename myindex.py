@@ -2,7 +2,7 @@ import dash
 import pandas as pd
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from components import avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo,cemapaga
+from components import avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo,cemapaga,sequencialarquivos
 from dash import Dash, dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
@@ -47,6 +47,15 @@ sidebar = html.Div(
                 active="exact",
                 className="nav-link-beat"
             ),
+                dbc.NavLink(
+                    [
+                        html.I(className="fa-solid fa-arrow-down-wide-short fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span("Sequencial Arquivos",className="sidebar-info"),
+                    ],
+                    href="/sequencialarquivos",
+                    active="exact",
+                    className="nav-link-beat"
+                ),         
                 dbc.NavLink(
                     [
                         html.I(className="fa-solid fa-barcode fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
@@ -99,7 +108,7 @@ sidebar = html.Div(
                 dbc.NavLink(
                     [
                         html.I(className="fa-solid fa-building-columns fa-lg", style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
-                        html.Span("Banco ",className="sidebar-info"),                    ],
+                        html.Span("Pagos Unicred ",className="sidebar-info"),                    ],
                     href="/banco",
                     active="exact",
                     className="nav-link-beat"
@@ -127,7 +136,6 @@ sidebar = html.Div(
                     href="/login",
                     active="exact",
                     className="nav-link-beat",
-                    #active_style={"color": "white"},  # Definindo a cor branca quando ativo
                 ),                                                                      
                 html.Div(id='open-new-tab'),              
             ],
@@ -148,6 +156,7 @@ devolucao_layout = devolucao.layout()
 santander_layout = santander.layout()
 ajusteboletoslayout = ajusteboletos.layout()
 sofisa_layout = sofisa.layout()
+sequencialarquivos_layout= sequencialarquivos.layout()
 safra_layout = safra.layout()
 avisos_layout = avisos.layout()
 bemvindo_layout = bemvindo.layout(username=username) 
@@ -179,8 +188,8 @@ VALID_USERNAME_PASSWORD_PAIRS = {
 # Definindo permissões
 PERMISSIONS = {
     'eleandro': 0,
-    'antonio': 1,
-    'lucimara': 1,
+    'antonio': 0,
+    'lucimara': 0,
     'taiane': 2, 
     'douglas':1,
     'caue':2,   
@@ -229,6 +238,8 @@ def display_page(pathname):
             return safra.layout()
         elif pathname == "/sofisa":
             return sofisa.layout()
+        elif pathname == "/sequencialarquivos":
+            return sequencialarquivos.layout()        
         elif pathname == "/rastrear":
             return rastrear.layout()
         elif pathname == "/avisos":

@@ -8,17 +8,12 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from app import app  # Importa o objeto app do arquivo app.py
 
-# Conexão com o banco de dados
-mydb = mysql.connector.connect(
-    host='db_sabertrimed.mysql.dbaas.com.br',
-    user='db_sabertrimed',
-    password='s@BRtR1m3d',
-    database='db_sabertrimed',
-)
+from components.bancodedados import retornosofisa_bd
+from components.bancodedados import remessasofisa_bd
 
 # Consulta na tabela unicredremessa
-consulta_remessa = "SELECT * FROM remessa_sofisa"
-df_remessa1 = pd.read_sql(consulta_remessa, con=mydb)
+
+df_remessa1 = remessasofisa_bd
 
 new_order = [
     'Data da Gravação do Arquivo',
@@ -96,8 +91,7 @@ df_remessa1.rename(columns=novos_nomes, inplace=True)
 df_remessa1 = df_remessa1.sort_values(by='Data da Ocorrencia', ascending=True)
 
 
-consulta_retorno = "SELECT * FROM retorno_sofisa"
-df_retorno1 = pd.read_sql(consulta_retorno, con=mydb)
+df_retorno1 = retornosofisa_bd
 
 df_retorno1['Data da ocorrência'] = pd.to_datetime(df_retorno1['Data da ocorrência'])
 
@@ -191,7 +185,6 @@ df_retorno1.rename(columns=novos_nomes, inplace=True)
 df_retorno1 = df_retorno1.sort_values(by=['Data da Ocorrencia', 'Número Sequência do arquivo corpo'], ascending=[True, True])
 
 
-mydb.close()
 
 df_retorno1.loc[df_retorno1['Tipo de cobrança'] == '4', 'Tipo de cobrança'] = "Título Descontado"
 df_retorno1.loc[df_retorno1['Tipo de cobrança'] == '2', 'Tipo de cobrança'] = "Cobrança Vinculada"

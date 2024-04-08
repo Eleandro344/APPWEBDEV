@@ -130,6 +130,11 @@ df_ordenado = pd.concat([df_ordenado, df_ordenadosantander], ignore_index=True)
 df_ordenado = pd.concat([df_ordenado, dfcanceladosofisa], ignore_index=True)
 df_ordenado = pd.concat([df_ordenado,cancelados_safra],ignore_index=True)
 
+
+
+
+
+
 #df_ordenado['Nome/Razão Social do Pagador'] = df_antecipacao['Nome/Razão Social do Pagador'].str.strip()
 
 #df_ordenado['Nome/Razão Social do Pagador'] = df_antecipacao['Nome/Razão Social do Pagador'].str.replace('     ', '')
@@ -150,6 +155,15 @@ df_ordenado = pd.merge(df_ordenado, df_antecipacao, on='CNPJ', how='left')
 df_ordenado = df_ordenado.sort_values(by='Vencimento')
 #df_ordenado['Vencimento'] = df_ordenado['Vencimento'].apply(lambda x: x.strftime("%d/%m/%Y"))
 
+data_atualteste = datetime.now()
+
+# Data há cinco dias atrás
+data_5_dias_atras = data_atualteste - timedelta(days=5)
+
+# Selecionar as linhas que estão dentro do intervalo de cinco dias atrás até a data atual
+df_ordenado = df_ordenado[(df_ordenado['Vencimento'] >= data_5_dias_atras) ]
+
+
 
 # Obtendo a data de hoje
 data_de_hoje = datetime.now()
@@ -163,6 +177,7 @@ data_de_hoje_mais_um_dia_formatada = data_de_hoje_mais_um_dia.strftime('%Y-%m-%d
 df_ordenado['Vencimento'] = df_ordenado['Vencimento'].astype(str)
 
 df_ordenado.loc[df_ordenado['IA'].isna(), 'IA'] = '0,0 %'
+
 
 def layout():
     return dbc.Container([

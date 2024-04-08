@@ -7,18 +7,13 @@ import mysql.connector
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from app import app  # Importa o objeto app do arquivo app.py
+from components.bancodedados import remessasafra_bd
+from components.bancodedados import retornosfra_bd
 
-# Conexão com o banco de dados
-mydb = mysql.connector.connect(
-    host='db_sabertrimed.mysql.dbaas.com.br',
-    user='db_sabertrimed',
-    password='s@BRtR1m3d',
-    database='db_sabertrimed',
-)
 
 # Consulta na tabela unicredremessa
-consulta_remessa = "SELECT * FROM remessa_safra"
-df_remessa = pd.read_sql(consulta_remessa, con=mydb)
+df_remessa = remessasafra_bd
+
 new_order = [
 'Data da Gravação do Arquivo',
 'Cod. Ocorrência',
@@ -100,8 +95,7 @@ df_remessa = df_remessa.sort_values(by=['Data da Ocorrencia', 'Número Sequenc. 
 
 ########################################################
 
-consulta_retorno = "SELECT * FROM retorno_safra"
-df_retorno = pd.read_sql(consulta_retorno, con=mydb)
+df_retorno = retornosfra_bd
 
 new_order = [
 'Data Da Ocorrência No Banco',   
@@ -163,7 +157,6 @@ new_order = [
 'Número Seqüencial Geração Arquivo Retorno treiler',
 'Número Seqüencial Do Registro No Arquivo treiler',
 ]
-mydb.close()
 
 df_retorno = df_retorno[new_order]
 
