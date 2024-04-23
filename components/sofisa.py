@@ -192,9 +192,9 @@ df_retorno1.loc[df_retorno1['Tipo de cobrança'] == '3', 'Tipo de cobrança'] = 
 
 
 
-df_retorno1.loc[df_retorno1['Ocorrencia'] == '28', 'Ocorrencia'] = "Débito de Tarifas/Custas – Correspondentes"
-df_retorno1.loc[df_retorno1['Ocorrencia'] == '23', 'Ocorrencia'] = "Título enviado para cartório"
-df_retorno1.loc[df_retorno1['Ocorrencia'] == '43', 'Ocorrencia'] = "Baixado por ter sido protestado"
+# df_retorno1.loc[df_retorno1['Ocorrencia'] == '15', 'Ocorrencia'] = "Baixa Rejeitada"
+# # df_retorno1.loc[df_retorno1['Ocorrencia'] == '23', 'Ocorrencia'] = "Título enviado para cartório"
+# # df_retorno1.loc[df_retorno1['Ocorrencia'] == '43', 'Ocorrencia'] = "Baixado por ter sido protestado"
 
 
 
@@ -209,7 +209,7 @@ def create_data_table(id, data):
         data=data.head(10).to_dict('records'),
         columns=[{'name': col, 'id': col} for col in data.columns],
         page_size=80,
-        style_table={'overflowX': 'auto', 'width': '125%', 'margin-left': '-12%', 'margin-right': 'auto', 'z-index': '0','border': 'none'},
+        style_table={'overflowX': 'auto', 'width': '150%', 'margin-top':'30px','margin-left': '-25%', 'margin-right': 'auto', 'z-index': '0','border': 'none'},
         style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold','color': 'Black','fontFamily': 'Arial'},
         style_cell={'textAlign': 'left','fontSize': '15px','minWidth': '100px', 'fontFamily': 'Arial'},  # Mudança da fonte para Arial
             style_data_conditional=[

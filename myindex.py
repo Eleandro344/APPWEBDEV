@@ -164,10 +164,20 @@ bemvindo_layout = bemvindo.layout(username=username)
 app.layout = html.Div([
     sidebar,
     html.Div([
-        dcc.Location(id="url", refresh=False),
+        dcc.Location(id="url", refresh=True),
         html.Div(id="page-content"),
     ], className="content"),
+    
+    # Adicione o código JavaScript aqui
+    html.Script('''
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "F5") {
+                location.reload(true);
+            }
+        });
+    ''')
 ])
+
 
 
 
@@ -207,6 +217,8 @@ def check_permission(username, pathname):
     return pathname
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
+
+
 def display_page(pathname):
     auth = request.authorization
     if auth:
@@ -252,5 +264,5 @@ def display_page(pathname):
         return dcc.Location(id="url", pathname="/login", refresh=True)
 
 if __name__ == '__main__':
-    app.run_server(debug=False, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)
-   #app.run_server(debug=True, use_reloader=True, host='10.1.1.23', port=8050, dev_tools_hot_reload=True)
+    app.run_server(debug=False, use_reloader=True, host='10.1.1.6', port=8050, dev_tools_hot_reload=True)
+   #app.run_server(debug=False, use_reloader=True, host='0.0.0.0', port=8050, dev_tools_hot_reload=True)

@@ -237,11 +237,11 @@ def layout():
     dbc.Row([
         dbc.Col(
             dash_table.DataTable(
-                id='data-table',
+                id='data-table',    
                 data=faturamento.to_dict('records'),
                 columns=[{'name': col, 'id': col} for col in faturamento.columns],
                 # page_size=10,  # Defina o número de linhas por página
-                style_table={'overflowX': 'auto', 'width': '125%', 'margin-top':'30px','margin-left': '-15%', 'margin-right': 'auto', 'z-index': '0','border': 'none'},
+                style_table={'overflowX': 'auto', 'width': '150%', 'margin-top':'30px','margin-left': '-25%', 'margin-right': 'auto', 'z-index': '0','border': 'none'},
                 style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold','color': 'Black','fontFamily': 'Arial'},
                 style_cell={'textAlign': 'left','fontSize': '15px','minWidth': '100px', 'fontFamily': 'Arial'}, # Estilo das células
                         style_data_conditional=[
@@ -262,6 +262,14 @@ def layout():
             ),
         ),
     ]),
+        # Adicione o código JavaScript aqui
+    html.Script('''
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "F5") {
+                location.reload(true);
+            }
+        });
+    '''),
     dbc.Row([
         dbc.Col(
             html.H3(f'Receita Liquida R$ {faturamentototal}', style={'margin-top': '20px', 'fontSize': 20, 'fontFamily': 'Calibri', 'color': 'black', 'text-align': 'right', 'fontWeight': 'bold'}),

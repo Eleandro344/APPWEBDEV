@@ -74,9 +74,7 @@ novos_nomes = {
     'Número de Inscrição do Pagador':'CNPJ',
 
     
-    # ... adicione os outros nomes conforme necessário
 }
 df_ordenado.rename(columns=novos_nomes, inplace=True)
 cancelados_safra = df_ordenado.drop(columns=['Data Da Ocorrência No Banco'])
 
-#print(cancelados_safra)

@@ -60,16 +60,11 @@ docs_mais_recentes = df_sorted.loc[indices_mais_recentes]
 resultado_merge = pd.merge(linhas_pedido_baixa, docs_mais_recentes, on='CODIGO DO DOC', how='inner')
 
 from datetime import datetime, timedelta
-data_de_hoje = datetime.now()
-data_de_hoje = data_de_hoje - timedelta(days=5)
 
-data_de_hoje = data_de_hoje.strftime('%d/%m/%y') 
 
-print(resultado_merge['Data de vencimento do boleto'])
 resultado_merge['Data de vencimento do boleto'] = pd.to_datetime(resultado_merge['Data de vencimento do boleto'], format='%d/%m/%y')
 
 #resultado_merge['Data de vencimento do Título'] = pd.to_datetime(resultado_merge['Data de vencimento do Título'], format='%d/%m/%y')
-resultado_merge = resultado_merge[resultado_merge['Data de vencimento do boleto'] >= data_de_hoje]
 
 
 df_ordenado = resultado_merge.sort_values(by='Data de vencimento do boleto')
@@ -107,4 +102,3 @@ dfcanceladosofisa = df_ordenado.drop(columns=['Instrução de Origem'])
 dfcanceladosofisa.loc[dfcanceladosofisa['Status Atual'] == '28', 'Status Atual'] = "Débito de Tarifas/Custas – Correspondentes"
 dfcanceladosofisa.loc[dfcanceladosofisa['Status Atual'] == '23', 'Status Atual'] = "Título enviado para cartório"
 dfcanceladosofisa.loc[dfcanceladosofisa['Status Atual'] == '43', 'Status Atual'] = "Baixado por ter sido protestado"
-#print(dfcanceladosofisa)

@@ -74,22 +74,17 @@ docs_mais_recentes = df_sorted.loc[indices_mais_recentes]
 
 resultado_merge = pd.merge(linhas_pedido_baixa, docs_mais_recentes, on='CODIGO DO DOC', how='inner')
 
-from datetime import datetime, timedelta
-data_de_hoje = datetime.now()
 
 
-data_de_hoje = data_de_hoje - timedelta(days=5)
 
-data_de_hoje = data_de_hoje.strftime('%d/%m/%y') 
-resultado_merge['Data de vencimento do Título'] = pd.to_datetime(resultado_merge['Data de vencimento do Título'], format='%d/%m/%y')
-resultado_merge = resultado_merge[resultado_merge['Data de vencimento do Título'] >= data_de_hoje]
+
 
 
 
 df_ordenado = resultado_merge.sort_values(by='Data de vencimento do Título')
 #df_ordenado['Data da Gravação do Arquivo'] = pd.to_datetime(df_ordenado['Data da Gravação do Arquivo'])
 # Converter a coluna 'Data da Ocorrencia' para o formato de data do pandas
-df_ordenado['Data da Gravação do Arquivo'] = pd.to_datetime(df_ordenado['Data da Gravação do Arquivo'], format='%d%m%y', errors='coerce')
+#df_ordenado['Data da Gravação do Arquivo'] = pd.to_datetime(df_ordenado['Data da Gravação do Arquivo'], format='%d%m%y', errors='coerce')
 
 # Formatar a coluna 'Data da Ocorrencia' no novo formato desejado
 #df_ordenado['Data da Gravação do Arquivo'] = df_ordenado['Data da Gravação do Arquivo'].dt.strftime('%d/%m/%Y')
@@ -125,22 +120,46 @@ condicao = (df_ordenado['Instrução de Origem'] == 'Protestar') & (df_ordenado[
 df_ordenado.loc[condicao, 'Status Atual'] = 'Boleto Protestado'
 df_ordenado = df_ordenado.drop(columns=['Instrução de Origem'])
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Liquidação de Título Trocado', 'Ordem'] = "Não pagar"
+#df_ordenado['Vencimento'] = pd.to_datetime(df_ordenado['Vencimento'])
+df_ordenado['Vencimento'] = pd.to_datetime(df_ordenado['Vencimento'], format='%d%m%y')
+df_ordenado['Data da Ocorrencia'] = pd.to_datetime(df_ordenado['Data da Ocorrencia'], format='%d%m%y')
+
+
+
+
 
 df_ordenado = pd.concat([df_ordenado, df_ordenadosantander], ignore_index=True)
+
 df_ordenado = pd.concat([df_ordenado, dfcanceladosofisa], ignore_index=True)
 df_ordenado = pd.concat([df_ordenado,cancelados_safra],ignore_index=True)
 
 
+from datetime import datetime, timedelta
 
 
 
 
-#df_ordenado['Nome/Razão Social do Pagador'] = df_antecipacao['Nome/Razão Social do Pagador'].str.strip()
 
-#df_ordenado['Nome/Razão Social do Pagador'] = df_antecipacao['Nome/Razão Social do Pagador'].str.replace('     ', '')
+data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=5)
+df_ordenado = df_ordenado.loc[df_ordenado['Vencimento'] >= data_hoje_menos_5_dias]
 
-df_ordenado['Nome/Razão Social do Pagador'] = df_ordenado['Nome/Razão Social do Pagador'].str.lower()
-df_ordenado['CNPJ'] = df_ordenado['CNPJ'].astype(str)
+df_ordenado = df_ordenado.sort_values(by='Vencimento')
+
+
+
+
+# data_de_hoje = datetime.now()
+
+
+# data_de_hoje = data_de_hoje - timedelta(days=5)
+
+# data_de_hoje = data_de_hoje.strftime('%d/%m/%y') 
+# df_ordenado = resultado_merge[df_ordenado['Vencimento'] >= data_de_hoje]
+
+
+#df_ordenado['Nome/Razão Social do Pagador'] = df_ordenado['Nome/Razão Social do Pagador'].str.lower()
+
+#df_ordenado['CNPJ'] = df_ordenado['CNPJ'].astype(str)
 #
 df_ordenado = pd.merge(df_ordenado, df_antecipacao, on='CNPJ', how='left')
 
@@ -149,19 +168,22 @@ df_ordenado = pd.merge(df_ordenado, df_antecipacao, on='CNPJ', how='left')
 
 
 
+# Selecione apenas os dados a partir da data de hoje
+# data_de_hoje = pd.Timestamp.today().normalize()  # Hoje à meia-noite
+# df_ordenado = df_ordenado.loc[df_ordenado['Vencimento'] >= data_de_hoje]
 
 
+# df_ordenado = df_ordenado.sort_values(by='Vencimento')
 
-df_ordenado = df_ordenado.sort_values(by='Vencimento')
 #df_ordenado['Vencimento'] = df_ordenado['Vencimento'].apply(lambda x: x.strftime("%d/%m/%Y"))
 
-data_atualteste = datetime.now()
+#data_atualteste = datetime.now()
 
 # Data há cinco dias atrás
-data_5_dias_atras = data_atualteste - timedelta(days=5)
+#data_5_dias_atras = data_atualteste - timedelta(days=5)
 
 # Selecionar as linhas que estão dentro do intervalo de cinco dias atrás até a data atual
-df_ordenado = df_ordenado[(df_ordenado['Vencimento'] >= data_5_dias_atras) ]
+#df_ordenado = df_ordenado[(df_ordenado['Vencimento'] >= data_5_dias_atras) ]
 
 
 
@@ -174,7 +196,7 @@ data_de_hoje_mais_um_dia = data_de_hoje + timedelta(days=0)
 # Convertendo a data para o formato desejado ('%Y-%m-%d')
 data_de_hoje_mais_um_dia_formatada = data_de_hoje_mais_um_dia.strftime('%Y-%m-%d')
 
-df_ordenado['Vencimento'] = df_ordenado['Vencimento'].astype(str)
+#df_ordenado['Vencimento'] = df_ordenado['Vencimento'].astype(str)
 
 df_ordenado.loc[df_ordenado['IA'].isna(), 'IA'] = '0,0 %'
 
@@ -201,7 +223,7 @@ def layout():
                 data=df_ordenado.to_dict('records'),
                 columns=[{'name': col, 'id': col} for col in df_ordenado.columns],
                 # page_size=10,  # Defina o número de linhas por página
-                style_table={'overflowX': 'auto', 'width': '125%', 'margin-top':'30px','margin-left': '-15%', 'margin-right': 'auto', 'z-index': '0','border': 'none'},
+                style_table={'overflowX': 'auto', 'width': '150%', 'margin-top':'30px','margin-left': '-24%', 'margin-right': 'auto', 'z-index': '0','border': 'none'},
                 style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold','color': 'Black','fontFamily': 'Arial'},
                 style_cell={'textAlign': 'left','fontSize': '15px','minWidth': '100px', 'fontFamily': 'Arial'}, # Estilo das células
                         style_data_conditional=[
