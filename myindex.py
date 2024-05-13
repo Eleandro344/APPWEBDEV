@@ -2,7 +2,7 @@ import dash
 import pandas as pd
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from components import avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo,cemapaga,sequencialarquivos
+from components import avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo,cemapaga,sequencialarquivos,itau
 from dash import Dash, dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
@@ -55,7 +55,16 @@ sidebar = html.Div(
                     href="/sequencialarquivos",
                     active="exact",
                     className="nav-link-beat"
-                ),         
+                ),    
+                dbc.NavLink(
+                    [
+                        html.I(className="fa-solid fa-barcode fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span(" Banco Itau",className="sidebar-info"),
+                    ],
+                    href="/itau",
+                    active="exact",
+                    className="nav-link-beat"
+                ),                     
                 dbc.NavLink(
                     [
                         html.I(className="fa-solid fa-barcode fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
@@ -159,6 +168,7 @@ sofisa_layout = sofisa.layout()
 sequencialarquivos_layout= sequencialarquivos.layout()
 safra_layout = safra.layout()
 avisos_layout = avisos.layout()
+itau_layout = itau.layout()
 bemvindo_layout = bemvindo.layout(username=username) 
 
 app.layout = html.Div([
@@ -224,7 +234,7 @@ def display_page(pathname):
     if auth:
         username = auth.username
     else:
-        return dcc.Location(id="url", pathname="/bemvindo", refresh=True)
+        return dcc.Location(id="url", pathname="/", refresh=True)
     if username:
         print("Usuário logado:", username)  # Imprime o nome de usuário que foi logado
         pathname = check_permission(username, pathname)
@@ -250,6 +260,8 @@ def display_page(pathname):
             return safra.layout()
         elif pathname == "/sofisa":
             return sofisa.layout()
+        elif pathname == "/itau":
+            return itau.layout()        
         elif pathname == "/sequencialarquivos":
             return sequencialarquivos.layout()        
         elif pathname == "/rastrear":
@@ -264,5 +276,5 @@ def display_page(pathname):
         return dcc.Location(id="url", pathname="/login", refresh=True)
 
 if __name__ == '__main__':
-    app.run_server(debug=False, use_reloader=True, host='10.1.1.6', port=8050, dev_tools_hot_reload=True)
-   #app.run_server(debug=False, use_reloader=True, host='0.0.0.0', port=8050, dev_tools_hot_reload=True)
+  #  app.run_server(debug=True, use_reloader=True, host='10.1.1.6', port=8050, dev_tools_hot_reload=True)
+   app.run_server(debug=False, use_reloader=True, host='0.0.0.0', port=8050, dev_tools_hot_reload=True)
