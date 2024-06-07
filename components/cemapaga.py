@@ -16,6 +16,7 @@ from components.cancelados_santander import df_ordenadosantander
 from components.sofisa_cancelados import dfcanceladosofisa
 from components.safra_cancelados import cancelados_safra
 from components.antecipacao import df_antecipacao
+from components.itau_cancelados import cancelados_itau
 
 import mysql.connector
 import pandas as pd
@@ -63,6 +64,15 @@ numero_de_docs  = linhas_pedido_baixa['CODIGO DO DOC']
 docs_filtrados = retorno[retorno['CODIGO DO DOC'].isin(numero_de_docs)]
 docs_filtrados['DATA DA GERAÇÃO DO ARQUIVO'] = pd.to_datetime(docs_filtrados['DATA DA GERAÇÃO DO ARQUIVO'])
 docs_filtrados = docs_filtrados[['CODIGO DO DOC','DATA DA GERAÇÃO DO ARQUIVO','TIPO DE INSTRUÇÃO ORIGEM','CÓDIGO DE MOVIMENTO']]
+
+
+condicao = (docs_filtrados['TIPO DE INSTRUÇÃO ORIGEM'] == ' Pedido de Baixa') & (docs_filtrados['CÓDIGO DE MOVIMENTO'] == 'Instrução Confirmada')
+
+# Atualizar o valor da coluna "Ocorrencia" para "boleto protestado" onde a condição for verdadeira
+docs_filtrados.loc[condicao, 'CÓDIGO DE MOVIMENTO'] = 'Boleto Baixado'
+
+
+
 # Primeiro, vamos ordenar o DataFrame pela coluna 'DATA DA GERAÇÃO DO ARQUIVO' para garantir que a data mais recente apareça primeiro
 df_sorted = docs_filtrados.sort_values(by='DATA DA GERAÇÃO DO ARQUIVO', ascending=False)
 
@@ -104,6 +114,7 @@ novos_nomes = {
 }
 df_ordenado.rename(columns=novos_nomes, inplace=True)
 df_ordenado = df_ordenado.drop(columns=['Ultima ocorrencia'])
+
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Protesto solicitado', 'Status Atual'] = "Enviado a Cartorio"
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Título Descontável (título com desistênc', 'Status Atual'] = "Devolvido"
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Instrução Confirmada', 'Status Atual'] = "Aceito"
@@ -112,13 +123,20 @@ df_ordenado.loc[df_ordenado['Status Atual'] == 'Título Descontado', 'Status Atu
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Pago(Título protestado pago em cartório)', 'Status Atual'] = "Pago em Cartório"
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Pedido de ', 'Status Atual'] = "Solicitação de Baixa"
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Protesto Em cartório', 'Status Atual'] = "Em cartório"
+df_ordenado.loc[df_ordenado['Status Atual'] == 'Sustação solicitada', 'Status Atual'] = "Em cartório"
+
 #df_remessa.loc[df_remessa['TIPO DE INSTRUÇÃO ORIGEM'] == 'Protesto Em cartório', 'TIPO DE INSTRUÇÃO ORIGEM'] = "Em cartório"
 
 condicao = (df_ordenado['Instrução de Origem'] == 'Protestar') & (df_ordenado['Status Atual'] == 'Instrução Confirmada')
 
 # Atualizar o valor da coluna "Ocorrencia" para "boleto protestado" onde a condição for verdadeira
 df_ordenado.loc[condicao, 'Status Atual'] = 'Boleto Protestado'
+
+
 df_ordenado = df_ordenado.drop(columns=['Instrução de Origem'])
+
+
+
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Liquidação de Título Trocado', 'Ordem'] = "Não pagar"
 #df_ordenado['Vencimento'] = pd.to_datetime(df_ordenado['Vencimento'])
 df_ordenado['Vencimento'] = pd.to_datetime(df_ordenado['Vencimento'], format='%d%m%y')
@@ -129,9 +147,20 @@ df_ordenado['Data da Ocorrencia'] = pd.to_datetime(df_ordenado['Data da Ocorrenc
 
 
 df_ordenado = pd.concat([df_ordenado, df_ordenadosantander], ignore_index=True)
-
 df_ordenado = pd.concat([df_ordenado, dfcanceladosofisa], ignore_index=True)
 df_ordenado = pd.concat([df_ordenado,cancelados_safra],ignore_index=True)
+df_ordenado = pd.concat([df_ordenado,cancelados_itau],ignore_index=True)
+df_ordenado.loc[df_ordenado['Status Atual'] == 'Liquidação Normal', 'Ordem'] = "Não pagar"
+df_ordenado.loc[df_ordenado['Status Atual'] == 'Em cartório', 'Ordem'] = "Não pagar"
+df_ordenado.loc[df_ordenado['Status Atual'] == 'LIQUIDAÇÃO EM CARTÓRIO', 'Ordem'] = "Não pagar"
+df_ordenado.loc[df_ordenado['Status Atual'] == 'Pago em Cartório', 'Ordem'] = "Não pagar"
+df_ordenado.loc[df_ordenado['Status Atual'] == 'LIQUIDAÇÃO NORMAL', 'Ordem'] = "Não pagar"
+
+df_ordenado.loc[df_ordenado['Status Atual'] == 'Boleto Baixado', 'Ordem'] = "Não pagar"
+
+
+
+df_ordenado.loc[df_ordenado['Ocorrencia'] == 'Solicitaçã', 'Ocorrencia'] = "Solicitado Baixa"
 
 
 from datetime import datetime, timedelta
@@ -140,14 +169,14 @@ from datetime import datetime, timedelta
 
 
 
-data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=5)
+data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=40)
 df_ordenado = df_ordenado.loc[df_ordenado['Vencimento'] >= data_hoje_menos_5_dias]
 
 df_ordenado = df_ordenado.sort_values(by='Vencimento')
 
-
-
-
+hoje = datetime.now().date()
+df_ordenado = df_ordenado[df_ordenado['Vencimento'] <= pd.to_datetime(hoje)]
+df_ordenado = df_ordenado.loc[df_ordenado['Ordem'] =='Cema Paga']
 # data_de_hoje = datetime.now()
 
 
@@ -164,6 +193,7 @@ df_ordenado = df_ordenado.sort_values(by='Vencimento')
 df_ordenado = pd.merge(df_ordenado, df_antecipacao, on='CNPJ', how='left')
 
 
+df_ordenado.loc[df_ordenado['Status Atual'] == 'BAIXA COM TRANSFERÊNCIA PARA D', 'Status Atual'] = "DEVOLVIDO"
 
 
 
@@ -171,7 +201,6 @@ df_ordenado = pd.merge(df_ordenado, df_antecipacao, on='CNPJ', how='left')
 # Selecione apenas os dados a partir da data de hoje
 # data_de_hoje = pd.Timestamp.today().normalize()  # Hoje à meia-noite
 # df_ordenado = df_ordenado.loc[df_ordenado['Vencimento'] >= data_de_hoje]
-
 
 # df_ordenado = df_ordenado.sort_values(by='Vencimento')
 
@@ -199,6 +228,15 @@ data_de_hoje_mais_um_dia_formatada = data_de_hoje_mais_um_dia.strftime('%Y-%m-%d
 #df_ordenado['Vencimento'] = df_ordenado['Vencimento'].astype(str)
 
 df_ordenado.loc[df_ordenado['IA'].isna(), 'IA'] = '0,0 %'
+
+df_ordenado['Vencimento'] = df_ordenado['Vencimento'].dt.strftime('%d/%m/%Y')
+
+#df_ordenado.to_excel("C:/Users/elean/Desktop/bancodedados/relatorioitau2205.xlsx")
+
+
+# REMOVER DOCS ERRADOS
+codigos_para_remover = [401326, 406866, 406858]
+df_ordenado = df_ordenado[~df_ordenado['CODIGO DO DOC'].isin(codigos_para_remover)]
 
 
 def layout():
@@ -250,16 +288,12 @@ def layout():
                         'backgroundColor': 'LightCyan',
                         'color': 'black',
                     },                       
-                {
-                    'if': {'column_id': 'Status Atual', 'filter_query': '{Status Atual} eq "Liquidação de Título Trocado"'},
-                    'backgroundColor': 'ForestGreen',
-                    'color': 'white',
-                },
-                  {
-                'if': {'column_id': 'Status Atual', 'filter_query': '{Status Atual} eq "Boleto Baixado Conforme Instrução"'},
-                'backgroundColor': 'ForestGreen',
-                'color': 'white',
-            },
+
+            #       {
+            #     'if': {'column_id': 'Status Atual', 'filter_query': '{Status Atual} eq "Boleto Baixado Conforme Instrução"'},
+            #     'backgroundColor': 'ForestGreen',
+            #     'color': 'white',
+            # },
                               {
                 'if': {'column_id': 'Ordem', 'filter_query': '{Ordem} eq "Não pagar"'},
                 'backgroundColor': 'ForestGreen',

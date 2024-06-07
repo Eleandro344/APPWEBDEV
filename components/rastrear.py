@@ -198,6 +198,11 @@ def carregar_dados_retorno():
         retornounicred_bd.loc[condicao, 'Ocorrencia'] = 'Boleto Protestado'
         retornounicred_bd['DATA LIQUIDAÇÃO'] = pd.to_datetime(retornounicred_bd['DATA LIQUIDAÇÃO'], format='%d%m%y', errors='coerce')
 
+
+        condicao = (retornounicred_bd['TIPO DE INSTRUÇÃO ORIGEM'] == ' Pedido de Baixa') & (retornounicred_bd['Ocorrencia'] == 'Instrução Confirmada')
+
+        # Atualizar o valor da coluna "Ocorrencia" para "boleto protestado" onde a condição for verdadeira
+        retornounicred_bd.loc[condicao, 'Ocorrencia'] = 'Boleto Baixado'
         # Formatar a coluna 'Data da Ocorrencia' no novo formato desejado
         retornounicred_bd['DATA LIQUIDAÇÃO'] = retornounicred_bd['DATA LIQUIDAÇÃO'].dt.strftime('%d/%m/%Y')
         return retornounicred_bd
@@ -246,6 +251,7 @@ def layout():
                     html.H3("Rastreamento de Boletos Unicred",className="text-titulo"),
                     dbc.Input(id='numero-boleto-input', type='text', placeholder='Digite o número do boleto'),
                     dbc.Button('Pesquisar por Nº do Documento', id='pesquisar-doc-button', n_clicks=0, color='primary', className='mr-1'),
+                    html.Div(id='output-message4', className='output-message'),  # Aplicar classe CSS
                     create_data_table('data-table-remessa3', df_remessa)
                     
                 ]
@@ -267,6 +273,16 @@ def layout():
 
         
     ])
+
+@app.callback(
+    Output('output-message4', 'children'),
+    [Input('pesquisar-doc-button', 'n_clicks')]
+)
+def update_message(n_clicks):
+    if n_clicks != 0:
+        return "Buscando seu doc, aguarde!"
+    else:
+        return " "
 # Callback para atualizar as tabelas com base no botão de pesquisa
 @app.callback(
     [Output('data-table-remessa3', 'data'),

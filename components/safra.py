@@ -259,6 +259,7 @@ def layout():
                     html.H3("Rastreamento de Boletos Safra",className="text-titulo"),# style={'marginBottom': '20px', 'margin-top': '0px', 'fontSize': 25, 'fontFamily': 'Calibri', 'fontWeight': 'bold', 'color': 'black', 'textAlign': 'left', 'marginBottom': '0px'}),
                     dbc.Input(id='numero-boleto-input', type='text', placeholder='Digite o número do boleto'),
                     dbc.Button('Pesquisar por Nº do Documento', id='pesquisar-doc-button', n_clicks=0, color='primary', className='mr-1'),#)style={'margin-bottom': '20px'}),
+                    html.Div(id='output-message2', className='output-message'),  # Aplicar classe CSS
                     create_data_table('data-table1-remessa4', df_remessa)
                     
                 ]
@@ -280,6 +281,16 @@ def layout():
 
         
     ])
+@app.callback(
+    Output('output-message2', 'children'),
+    [Input('pesquisar-doc-button', 'n_clicks')]
+)
+def update_message(n_clicks):
+    if n_clicks != 0:
+        return "Buscando seu doc, aguarde!"
+    else:
+        return " "
+
 # Callback para atualizar as tabelas com base no botão de pesquisa
 @app.callback(
     [Output('data-table1-remessa4', 'data'),

@@ -46,6 +46,8 @@ docs_filtrados = docs_filtrados[['CODIGO DO DOC','Data Da Ocorrência No Banco',
 # Certifique-se de que a coluna de datas é do tipo datetime
 docs_filtrados['Data Da Ocorrência No Banco'] = pd.to_datetime(docs_filtrados['Data Da Ocorrência No Banco'])
 
+
+
 # Ordene o DataFrame pela coluna de datas para garantir que a data mais recente apareça primeiro
 df_sorted = docs_filtrados.sort_values(by='Data Da Ocorrência No Banco', ascending=False)
 
@@ -61,6 +63,8 @@ df_ordenado = pd.merge(linhas_pedido_baixa, docs_mais_recentes, on='CODIGO DO DO
 from datetime import datetime
 
 data_de_hoje = datetime.now().strftime('%d/%m/%y')
+df_ordenado.loc[df_ordenado['Cod. Ocorrência'] == 'PEDIDO DE BAIXA', 'Cod. Ocorrência'] = "Solicitado Baixa"
+
 df_ordenado['Ordem'] = "Cema Paga"
 df_ordenado.loc[df_ordenado['Cod. Ocorrência'] == 'LIQUIDAÇÃO NORMAL', 'Ordem'] = "Não pagar"
 novos_nomes = {
@@ -76,5 +80,10 @@ novos_nomes = {
     
 }
 df_ordenado.rename(columns=novos_nomes, inplace=True)
+df_ordenado['Vencimento'] = pd.to_datetime(df_ordenado['Vencimento'], format='%d/%m/%y')
+
+#df_ordenado['Data da Ocorrencia'] = pd.to_datetime(df_ordenado['Data da Ocorrencia'], format='%d/%m/%y')
+
+
 cancelados_safra = df_ordenado.drop(columns=['Data Da Ocorrência No Banco'])
 

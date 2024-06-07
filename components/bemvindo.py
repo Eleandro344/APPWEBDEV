@@ -11,29 +11,26 @@ from components.shared_variables import username
 app.title = 'Trimed Financ'
 favicon = 'money_upico.ico'
 
-
 app.server.favicon = favicon
-
-
 
 def layout(username):
     if username == "lucimara":
         username = username.capitalize()
-    if  username == "eleandro":
+    if username == "eleandro":
         username = username.capitalize()
-    if  username == "antonio":
+    if username == "antonio":
         username = username.capitalize() 
-    if  username ==  "taiane":
+    if username == "taiane":
         username = username.capitalize()   
-    if  username ==  "douglas":
+    if username == "douglas":
         username = username.capitalize()  
-    if  username ==  "caue":
+    if username == "caue":
         username = username.capitalize()                    
-    return html.Div(style={'background-color': '#FFFFFF', 'height': '220vh', 'width': '100%'}, children=[
+    return html.Div(className='pagina-initial', children=[
         html.Header(
             html.Img(src='/assets/logobranco.png', className="logo-img", style={'width': '15%',}),
             style={
-                'background-color': '#008B8B',
+                'background-color': '#008B8B',#className='pagina-initial'
                 'padding': '15px',
                 'text-align': 'center',
                 'font-family': 'Arial, sans-serif',
@@ -44,16 +41,16 @@ def layout(username):
         html.I(className="fa fa-user", style={'font':'Arial','position': 'absolute', 'height': '220vh', 'top': '150px', 'right': '80px', 'font-size': '18px', 'color': '#222222', 'font-weight': 'bold'}),
         html.H1(f"Olá, {username}",className="text-user"),# style={'font-weight': 'bold','font-family': 'Bahnschrift','position': 'absolute', 'top': '150px', 'right': '110px', 'font-size': '16px', 'color': '#222222'}),
         html.Div([
-            html.Iframe(
-                src="https://lottie.host/embed/ebce1a95-b502-4a84-b8cd-5f9201bb26d6/ot080sbFnv.json",
-                style={'width': '550px', 'height': '450px', 'margin': 'auto', 'padding-top': '20px', 'display': 'block'}
+            html.Iframe(className='animation1',
+                src="https://lottie.host/embed/ed87547d-213b-4beb-81b1-084c75e27473/Hj9y7DHwau.json",
+            ),
+            html.Iframe(className='animation2',
+                src="https://lottie.host/embed/4f864203-b546-48b6-97e6-e98a8b74d293/RytEztFHFm.json",
             )
-        ]),#<iframe src="https://lottie.host/embed/ebce1a95-b502-4a84-b8cd-5f9201bb26d6/ot080sbFnv.json"></iframe>
-        dbc.Button('Continuar para Menu Principal', id='/home', href='/home',class_name="text-button"
-                   #style={'border-width': '3px', 'font-size': '14px', 'background-color': '#008B8B',
-                    #      'margin-left': '43%', 'margin-top': '15px', 'padding-top': '10px','font-family': 'Bahnschrift', }
-                   ),
+        ], className='animation-container'),
+        html.Div([
+            dbc.Button('Continuar para Menu Principal', id='/home', href='/home', className="text-button"),
+
+
+        ])
     ])
-
-
-

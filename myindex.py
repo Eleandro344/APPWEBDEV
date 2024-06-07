@@ -2,7 +2,7 @@ import dash
 import pandas as pd
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from components import avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo,cemapaga,sequencialarquivos,itau
+from components import avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo,cemapaga,sequencialarquivos,itau,sicoob,trocados
 from dash import Dash, dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
@@ -89,7 +89,15 @@ sidebar = html.Div(
                     href="/sofisa",
                     active="exact",
                     className="nav-link-beat"
-                ),   
+                ),
+                dbc.NavLink(
+                    [
+                        html.I(className="fa-solid fa-barcode fa-lg", style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span(" Banco Sicoob",className="sidebar-info"),                    ],
+                    href="/sicoob",
+                    active="exact",
+                    className="nav-link-beat"
+                ),                      
                 dbc.NavLink(
                     [
                         html.I(className="fa-solid fa-barcode fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
@@ -97,7 +105,15 @@ sidebar = html.Div(
                     href="/safra",
                     active="exact",
                     className="nav-link-beat"
-                ),                             
+                ),   
+                dbc.NavLink(
+                    [
+                        html.I(className="fa-solid fa-barcode fa-lg", style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span("Stratton ",className="sidebar-info"),                    ],
+                    href="/banco",
+                    active="exact",
+                    className="nav-link-beat"
+                ),                                          
                 dbc.NavLink(    
                     [
                         html.I(className="fa-solid fa-sack-dollar fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
@@ -114,14 +130,7 @@ sidebar = html.Div(
                     active="exact",
                     className="nav-link-beat"
                 ),            
-                dbc.NavLink(
-                    [
-                        html.I(className="fa-solid fa-building-columns fa-lg", style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
-                        html.Span("Pagos Unicred ",className="sidebar-info"),                    ],
-                    href="/banco",
-                    active="exact",
-                    className="nav-link-beat"
-                ),
+
                     dbc.NavLink(
                     [
                     html.I(className="fa-solid fa-truck-fast fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
@@ -133,8 +142,8 @@ sidebar = html.Div(
                     dbc.NavLink(
                     [
                     html.I(className="fa-solid fa-file-circle-exclamation fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
-                    html.Span("Titulos com Problema",className="sidebar-info"),                    ],
-                    href="/ajusteboletos",
+                    html.Span("Situação Bancos",className="sidebar-info"),                    ],
+                    href="/trocados",
                     active="exact",
                     className="nav-link-beat"
                 ),
@@ -163,12 +172,14 @@ banco_layout = banco.layout()
 login_layout = login.layout()
 devolucao_layout = devolucao.layout()
 santander_layout = santander.layout()
-ajusteboletoslayout = ajusteboletos.layout()
+trocados_layout = trocados.layout()
 sofisa_layout = sofisa.layout()
 sequencialarquivos_layout= sequencialarquivos.layout()
 safra_layout = safra.layout()
 avisos_layout = avisos.layout()
 itau_layout = itau.layout()
+sicoob_layout = sicoob.layout()
+
 bemvindo_layout = bemvindo.layout(username=username) 
 
 app.layout = html.Div([
@@ -220,9 +231,9 @@ auth = dash_auth.BasicAuth(app, VALID_USERNAME_PASSWORD_PAIRS)
 def check_permission(username, pathname):
     if username in PERMISSIONS:
         user_permission = PERMISSIONS[username]
-        if user_permission == 1 and (pathname == "/faturamento" or pathname == "/banco"):       
+        if user_permission == 9 and (pathname == "/faturamento" or pathname == "/banco"):       
             return "/semacesso"  # Redireciona usuários com permissão 1 da página de faturamento para a página inicial
-        if user_permission == 2 and (pathname == "/devolucao" or pathname == "/banco"):
+        if user_permission ==9 and (pathname == "/devolucao" or pathname == "/banco"):
             return "/semacesso"  # Redireciona usuários com permissão 1 da página de faturamento para a página inicial
     return pathname
 
@@ -250,6 +261,8 @@ def display_page(pathname):
             return home.layout()
         elif pathname == "/devolucao":
             return devolucao.layout()
+        elif pathname == "/sicoob":
+            return sicoob.layout()        
         elif pathname == "/banco":
             return banco.layout()
         elif pathname == "/santander":
@@ -268,13 +281,13 @@ def display_page(pathname):
             return rastrear.layout()
         elif pathname == "/avisos":
             return avisos.layout()
-        elif pathname == "/ajusteboletos":
-            return ajusteboletos.layout()
+        elif pathname == "/trocados":
+            return trocados.layout()
         elif pathname == "/cemapaga":
             return  cemapaga.layout()
     else:
         return dcc.Location(id="url", pathname="/login", refresh=True)
 
 if __name__ == '__main__':
-  #  app.run_server(debug=True, use_reloader=True, host='10.1.1.6', port=8050, dev_tools_hot_reload=True)
-   app.run_server(debug=False, use_reloader=True, host='0.0.0.0', port=8050, dev_tools_hot_reload=True)
+    app.run_server(debug=False, host='10.1.1.24', port=8050, dev_tools_hot_reload=False)
+ #  3app.run_server(debug=True, use_reloader=True, host='0.0.0.0', port=8050, dev_tools_hot_reload=True)
