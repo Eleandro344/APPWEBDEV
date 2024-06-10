@@ -17,6 +17,8 @@ from components.sofisa_cancelados import dfcanceladosofisa
 from components.safra_cancelados import cancelados_safra
 from components.antecipacao import df_antecipacao
 from components.itau_cancelados import cancelados_itau
+from components.sicoob_cancelados import cancelados_sicoob
+from sqlalchemy import create_engine
 
 import mysql.connector
 import pandas as pd
@@ -145,18 +147,21 @@ df_ordenado['Data da Ocorrencia'] = pd.to_datetime(df_ordenado['Data da Ocorrenc
 
 
 
-
+cancelados_sicoob
 df_ordenado = pd.concat([df_ordenado, df_ordenadosantander], ignore_index=True)
 df_ordenado = pd.concat([df_ordenado, dfcanceladosofisa], ignore_index=True)
 df_ordenado = pd.concat([df_ordenado,cancelados_safra],ignore_index=True)
 df_ordenado = pd.concat([df_ordenado,cancelados_itau],ignore_index=True)
+df_ordenado = pd.concat([df_ordenado, cancelados_sicoob], ignore_index=True)
+
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Liquidação Normal', 'Ordem'] = "Não pagar"
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Em cartório', 'Ordem'] = "Não pagar"
 df_ordenado.loc[df_ordenado['Status Atual'] == 'LIQUIDAÇÃO EM CARTÓRIO', 'Ordem'] = "Não pagar"
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Pago em Cartório', 'Ordem'] = "Não pagar"
+df_ordenado.loc[df_ordenado['Status Atual'] == 'Pago', 'Ordem'] = "Não pagar"
 df_ordenado.loc[df_ordenado['Status Atual'] == 'LIQUIDAÇÃO NORMAL', 'Ordem'] = "Não pagar"
-
 df_ordenado.loc[df_ordenado['Status Atual'] == 'Boleto Baixado', 'Ordem'] = "Não pagar"
+df_ordenado.loc[df_ordenado['Status Atual'] == 'Baixado', 'Ordem'] = "Não pagar"
 
 
 
@@ -169,27 +174,22 @@ from datetime import datetime, timedelta
 
 
 
-data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=40)
+data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=3)
 df_ordenado = df_ordenado.loc[df_ordenado['Vencimento'] >= data_hoje_menos_5_dias]
 
 df_ordenado = df_ordenado.sort_values(by='Vencimento')
 
-hoje = datetime.now().date()
-df_ordenado = df_ordenado[df_ordenado['Vencimento'] <= pd.to_datetime(hoje)]
+
+# ATÉ A DATA DE HOJE!!
+ 
+# hoje = datetime.now().date()
+# df_ordenado = df_ordenado[df_ordenado['Vencimento'] <= pd.to_datetime(hoje)]
 df_ordenado = df_ordenado.loc[df_ordenado['Ordem'] =='Cema Paga']
-# data_de_hoje = datetime.now()
 
 
-# data_de_hoje = data_de_hoje - timedelta(days=5)
 
-# data_de_hoje = data_de_hoje.strftime('%d/%m/%y') 
-# df_ordenado = resultado_merge[df_ordenado['Vencimento'] >= data_de_hoje]
+############################################################
 
-
-#df_ordenado['Nome/Razão Social do Pagador'] = df_ordenado['Nome/Razão Social do Pagador'].str.lower()
-
-#df_ordenado['CNPJ'] = df_ordenado['CNPJ'].astype(str)
-#
 df_ordenado = pd.merge(df_ordenado, df_antecipacao, on='CNPJ', how='left')
 
 
@@ -234,9 +234,13 @@ df_ordenado['Vencimento'] = df_ordenado['Vencimento'].dt.strftime('%d/%m/%Y')
 #df_ordenado.to_excel("C:/Users/elean/Desktop/bancodedados/relatorioitau2205.xlsx")
 
 
+
+
 # REMOVER DOCS ERRADOS
 codigos_para_remover = [401326, 406866, 406858]
 df_ordenado = df_ordenado[~df_ordenado['CODIGO DO DOC'].isin(codigos_para_remover)]
+
+
 
 
 def layout():

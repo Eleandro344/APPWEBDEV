@@ -89,15 +89,7 @@ df_ordenado.rename(columns=novos_nomes, inplace=True)
 
 df_ordenadosantander = df_ordenado.drop(columns=['Instrução de Origem'])
 
-df_ordenadosantander['Vencimento'] = pd.to_datetime(df_ordenadosantander['Vencimento'])
-
-
-df_ordenadosantander
-
-
-
-
-
+df_ordenadosantander['Vencimento'] = pd.to_datetime(df_ordenadosantander['Vencimento'], format='%d/%m/%y')
 
 
 
