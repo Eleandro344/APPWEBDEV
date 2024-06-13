@@ -14,7 +14,7 @@ from dash.dependencies import Input, Output
 import dash_auth
 import globals
 from dash import dcc
-from flask import request
+from flask import request   
 from components.shared_variables import username
 from dash import html, dcc, Input, Output, ctx, callback_context
 from dash.exceptions import PreventUpdate
