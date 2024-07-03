@@ -1,288 +1,255 @@
-from dash import html
-from dash import Dash, html, dcc, dash_table
-from dash.dependencies import Input, Output
-import dash_bootstrap_components as dbc
-import subprocess
+from dash import dash_table
 import pandas as pd
-import win32com.client as win32
-import datetime as dt
-import statistics
+import mysql.connector
+from datetime import datetime, timedelta
+from dash import html, Input, Output, State, dcc
+from dash.exceptions import PreventUpdate
+import dash_bootstrap_components as dbc
+from app import app
+from dash import html, dcc, callback
+from dash.dependencies import Input, Output, State
+from datetime import date, datetime, timedelta
+import dash_bootstrap_components as dbc
+import pandas as pd
 import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+import calendar
+import mysql.connector
+from dash_table import DataTable
 import locale
-from datetime import date
-from app import app  # Importa o objeto app do arquivo app.py
+
+def carregar_dados_remessa():
+    try:
+        # Conexão com o banco de dados
+        mydb = mysql.connector.connect(
+            host='db_sabertrimed.mysql.dbaas.com.br',
+            user='db_sabertrimed',
+            password='s@BRtR1m3d',
+            database='db_sabertrimed',
+        )
+
+        # Consultas de remessas
+        remessa_santander = pd.read_sql("SELECT * FROM remessa_santander", con=mydb)
+        rememessa_uncired = pd.read_sql("SELECT * FROM unicredremessa", con=mydb)
+        remessa_safra = pd.read_sql("SELECT * FROM remessa_safra", con=mydb)
+        remessa_sofisa = pd.read_sql("SELECT * FROM remessa_sofisa", con=mydb)
+        remessa_itau = pd.read_sql("SELECT * FROM remessa_itau", con=mydb)
+        remessa_sicoob = pd.read_sql("SELECT * FROM remessa_sicoob", con=mydb)
+
+        # Data de ontem
+        hoje = datetime.now()
+        if hoje.weekday() == 0:
+            ontem = hoje - timedelta(days=3)
+        else:
+            ontem = hoje - timedelta(days=1)
+        ontem = ontem.strftime('%Y-%m-%d')
+
+        # Processamento das remessas
+        santander = remessa_santander[remessa_santander['Código de movimento remessa'] == 'Enviado']
+        santander = santander[santander['Nº de inscrição do beneficiário'] != 0]
+        santander['Valor nominal do boleto'] = santander['Valor nominal do boleto'].str.replace(',', '.').astype(float)
+        santander['Data de emissão do boleto'] = pd.to_datetime(santander['Data de emissão do boleto'], format='%d/%m/%y', errors='coerce')
+        santander = santander[santander['Data de emissão do boleto'] == ontem]
+        santandertotal = santander['Valor nominal do boleto'].sum()
+
+        remessa_itau = remessa_itau[["DATA DE GERAÇÃO HEADER","DATA DE EMISSÃO","CÓD. DE OCORRÊNCIA", "NOME DO BANCO HEADER","VALOR DO TÍTULO"]]
+        remessa_itau['DATA DE EMISSÃO'] = pd.to_datetime(remessa_itau['DATA DE EMISSÃO'], format='%d/%m/%y')
+        remessa_itau= remessa_itau[remessa_itau['CÓD. DE OCORRÊNCIA'] =='REMESSA DE TÍTULOS']   
+        itauontem = remessa_itau[remessa_itau['DATA DE EMISSÃO'] == ontem]
+        itauontem['VALOR DO TÍTULO'] = itauontem['VALOR DO TÍTULO'].str.replace(',', '.').astype(float)
+
+        itautotal = itauontem['VALOR DO TÍTULO'].sum()
 
 
-tabela_docs = pd.read_excel('C:/Users/elean/Desktop/bancodedados/docs.xlsx')
+        sicoob = remessa_sicoob[remessa_sicoob['Ocorrencia'] == 'Enviado']
+        sicoob['Data Emissão do Título'] = pd.to_datetime(sicoob['Data Emissão do Título'], format='%d%m%Y', errors='coerce')
+        sicoobontem = sicoob[sicoob['Data Emissão do Título'] == ontem]
+        sicoobontem['Valor do Título'] = sicoobontem['Valor do Título'].str.replace(',', '.').astype(float)
+        sicoobtotal = sicoobontem['Valor do Título'].sum()
 
-tabela_docs.loc[tabela_docs['Banco'] == 'Itau', 'Banco']= "Itau"
-tabela_docs.loc[tabela_docs['Banco'] == 'Bradesco', 'Banco']= "Stratton"
-tabela_docs = tabela_docs[tabela_docs['Status']!='Cancelado']
-tabela_docs.loc[tabela_docs['Banco'] != 'Itau', 'TAC'] = 0
-#Cria taxa de boleto
-tabela_docs['Taxa de boleto'] = 0
-tabela_docs.loc[tabela_docs['Banco'] == 'Itau', 'Taxa de boleto']= 0.00
-tabela_docs.loc[tabela_docs['Banco'] == 'Santander', 'Taxa de boleto']= 1.35
-tabela_docs.loc[tabela_docs['Banco'] == 'Unicred ES', 'Taxa de boleto']= 1.30
-tabela_docs.loc[tabela_docs['Banco'] == 'Stratton', 'Taxa de boleto']= 2.00
-tabela_docs = tabela_docs[tabela_docs['Status']!='Cancelado']
-tabela_docs = tabela_docs[tabela_docs['Status']!='Solic. Baixa']
-def contagemboletos(tabela_docs):
-    # Filtra os boletos com valor igual a 'larca' na coluna 'Banco'
-    boletos_larca = tabela_docs.loc[tabela_docs['Banco'] == 'Itau', 'Com Registro']
-
-    # Verifica se há boletos com valor 'larca'
-    if not boletos_larca.empty:
-        contagem = boletos_larca.value_counts().values[0]
-    else:
-        contagem = 0
-
-    return contagem
-contagem = contagemboletos(tabela_docs)
-
-if contagem != 0:
-    valortac = 195.00 / contagem
-else:
-    valortac = 0.0
-
-# Define o valor da coluna 'TAC' no DataFrame
-tabela_docs['TAC'] = valortac
-#tabela_docs['TAC'] = valortac.astype(float)
-tabela_docs['TAC'] = tabela_docs['TAC'].round(2)
-
-tabela_docs.loc[tabela_docs['Banco'] != 'Itau', 'TAC'] = 0
-
-#SOMA TAXA DE BOLETO DOCS
-total = tabela_docs['Com Registro'].sum()
-taxaboleto = total * 1.95
-taxaboleto.astype(float)
-
-#CRIA MINHA TABELA AGRUPADA POR BANCO
-faturamento = tabela_docs[['Banco','%Desc','Status','Com Registro','Valor']].groupby('Banco').sum()
-
-# CRIA VARIAVEL HOJE COM DATA DE HOJE
-hoje = dt.datetime.now()
-hoje.strftime("%d/%m/%Y")
-tabela_docs[["datadehoje"]] =dt.datetime.now() 
-hoje.strftime("%d/%m/%Y")
-from datetime import date
-
-#data_atual = date.today()
-#tabela_docs[["datadehoje"]] = data_atual = date.today()
-from datetime import date
-
-data_atual = date.today()
-tabela_docs[["datadehoje"]] = data_atual = date.today()
-tabela_docs['IOF'] = 0
-#CRIA COLUNA MEDIA DE DIAS PARA PAGAMENTO
-tabela_docs['media_pagamento'] = (tabela_docs['DtVenc'] - dt.datetime.now()).dt.days + 1  #method 11
-somaunicred = tabela_docs.loc[tabela_docs['Banco'] == 'Unicred ES', 'Valor'].sum()
-#CADASTRA TAXA DE JUROS
-#AO DIA
-tabela_docs.loc[tabela_docs['Banco'] == 'Unicred ES', 'taxa_juros']= 0.0496666666666667
-tabela_docs.loc[tabela_docs['Banco'] == 'Itau', 'taxa_juros']= 0.073333
-tabela_docs.loc[tabela_docs['Banco'] == 'Santander', 'taxa_juros']= 0.05248011
-tabela_docs.loc[tabela_docs['Banco'] == 'Stratton', 'taxa_juros']= 0.056
-#zera nan da coluna taxajuros
-tabela_docs ['taxa_juros'] = tabela_docs ['taxa_juros']. fillna (0)
-#tabela_docs.head(50)
-#zera nan da coluna taxajuros
-tabela_docs ['TAC'] = tabela_docs ['TAC'].astype(float)
-
-#CALCULA A TAXA DE JUROS
-tabela_docs ['taxa_total'] = tabela_docs['taxa_juros'] * tabela_docs['media_pagamento']
-
-#DESCONTO DA TAXA EM VALOR R$
-tabela_docs ['desctaxa'] =  tabela_docs ['taxa_total'] * tabela_docs ['Valor'] / 100 
-
-#cria o Desagio - desagio = valor  - desconto da taxa somente
-tabela_docs ['Deságio'] = tabela_docs ['Valor'] - tabela_docs['desctaxa'] 
+        unicred = rememessa_uncired[rememessa_uncired['Identificação da Ocorrência'] == 'Enviado']
+        unicred['Data de emissão do Título'] = pd.to_datetime(unicred['Data de emissão do Título'], format='%d/%m/%y', errors='coerce')
+        unicred = unicred[unicred['Data de emissão do Título'] == ontem]
+        unicred['Valor do Título'] = unicred['Valor do Título'].str.replace(',', '.').astype(float)
+        totalunicred = unicred['Valor do Título'].sum()
 
 
-#AJUSTES
-tabela_docs['Deságio'] = tabela_docs['Deságio'].astype(float)
-tabela_docs['taxa_total'] = tabela_docs['taxa_total'].round(2)
-
-#SE MEU DESCONTO DA TAXA FOR 0 MEU DESAGIO VAI SER 0 TAMBEM
-tabela_docs.loc[tabela_docs['desctaxa'] == 0, 'Deságio'] = 0
-#RENOMEIA COLUNAS
-mapeamento = { 'taxa_total': 'taxa total','desctaxa': 'descontado','Deságio': 'liquido' }
-
-# Renomear as colunas usando o método rename()
-tabela_docs = tabela_docs.rename(columns=mapeamento)
-
-tabela_docs['liquido'] = tabela_docs['liquido'].astype(float)
-tabela_docs['liquido'] = tabela_docs['liquido'].apply(lambda x: round(x, 3))
-tabela_docs['descontado'] = tabela_docs['descontado'].round(2)
-faturamento1 = tabela_docs
-faturamento1 = faturamento1.reset_index()
-faturamento1  = tabela_docs[['Banco','Com Registro','media_pagamento','liquido']].groupby('Banco').mean()
-faturamento1['media_pagamento'] = faturamento1['media_pagamento'].astype(int)
-faturamento  = tabela_docs[['Banco','Status','Com Registro','Valor','TAC','Taxa de boleto','descontado','liquido']].groupby('Banco').sum()
-faturamento= faturamento.reset_index()
-#ADICIONAR IOF
-faturamento['IOF'] = faturamento['Valor'] * 0.0055376
-faturamento['IOF']= faturamento['IOF'].round(2)
-
-#SOMENTE SANTANDER RECEBE IOF
-faturamento.loc[faturamento['Banco'] != 'Santander', 'IOF']= 0.00
-#ADICIONA A RECOMPRA LARCA
-faturamento['Recompra'] = 0
-faturamento = faturamento.merge(faturamento1['media_pagamento'], left_on='Banco', right_index=True)
-faturamento = faturamento.reindex(columns=['Banco', 'Com Registro', 'Valor','TAC','Taxa de boleto','Recompra','IOF','descontado','liquido','media_pagamento'])
-faturamento['liquido']= faturamento ['Valor'] - faturamento['TAC'] - faturamento['Taxa de boleto'] - faturamento ['IOF'] - faturamento['Recompra'] - faturamento['descontado']
-faturamento['CET'] = faturamento ['Valor'] - faturamento['TAC'] - faturamento ['IOF'] - faturamento['descontado']
-faturamento['CET']  = faturamento ['Valor'] - faturamento ['CET']
-faturamento.loc[faturamento['Banco'] == 'Itau', 'CET'] = faturamento ['Valor'] - faturamento['TAC'] - faturamento ['IOF'] - faturamento['descontado'] 
-faturamento.loc[faturamento['Banco'] == 'Itau', 'CET'] = faturamento ['Valor'] - faturamento ['CET']
-faturamento.loc[faturamento['Banco'] == 'Unicred ES', 'IOF'] = faturamento['Valor'] * 0.3841 /100
-faturamento.loc[faturamento['Banco'] == 'Unicred ES', 'CET'] = faturamento['IOF'] + faturamento['descontado']
-faturamento['CET'] = faturamento['CET'] * 100 / faturamento['Valor']
-faturamento['CET'] = faturamento['CET'].astype(float)
-faturamento['CET'] = faturamento['CET'].round(3)
-faturamento['CET'] = faturamento['CET'] / 100
-faturamento['CET'] = faturamento['CET'].map('{:.2%}'.format)
-# Filtrar os dados para o banco "larca"
-larca_df = tabela_docs[tabela_docs['Banco'] == 'Itau']
-
-# Calcular a média ponderada
-soma_produto = (larca_df['media_pagamento'] * larca_df['Valor']).sum()
-soma_valores = larca_df['Valor'].sum()
-media_ponderada_larca = soma_produto / soma_valores
-media_ponderada_larca
-media_ponderada_larca = media_ponderada_larca.round(2)
-faturamento.loc[faturamento['Banco'] == 'Itau', 'media_pagamento'] = media_ponderada_larca
-# Filtrar os dados para o banco "santander"
-santanderdf = tabela_docs[tabela_docs['Banco'] == 'Santander']
-
-# Calcular a média ponderada
-soma_produto = (santanderdf['media_pagamento'] * santanderdf['Valor']).sum()
-soma_valores = santanderdf['Valor'].sum()
-media_ponderada_santander = soma_produto / soma_valores
-
-media_ponderada_santander = media_ponderada_santander.round(2)
-faturamento.loc[faturamento['Banco'] == 'Santander', 'media_pagamento'] = media_ponderada_santander
-faturamento.loc[faturamento['Banco'] == 'Santander', 'liquido'] = faturamento['IOF'] + faturamento['descontado'] 
-faturamento.loc[faturamento['Banco'] == 'Santander', 'liquido'] = faturamento['Valor'] -  faturamento['liquido']
-faturamento.loc[faturamento['Banco'] == 'Unicred ES', 'liquido'] = faturamento['Valor'] - faturamento['descontado'] 
-faturamento['IOF'] = faturamento['IOF'].round(2)
-faturamento['Taxa de boleto'] = faturamento['Taxa de boleto'].round(2)
-
-faturamentototal= faturamento['liquido'].sum()
-locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
-locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
-
-# 
-# Formatar o número
-faturamentototal = locale.currency(faturamentototal, grouping=True, symbol=None)
 
 
-# Formatar os valores na coluna 'Valor' para o formato de moeda
-faturamento['descontado'] = faturamento['descontado'].map(lambda x: locale.currency(x, grouping=True))
-
-locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 
-# Formatar os valores na coluna 'Valor' para o formato de moeda
-faturamento['liquido'] = faturamento['liquido'].map(lambda x: locale.currency(x, grouping=True))
+        safra = remessa_safra[remessa_safra['Cod. Ocorrência'] == 'REMESSA DE TÍTULOS']
+        safra['Nome do Banco'] = "Safra"        
+        safra['Data De Emissão Do Título'] = pd.to_datetime(safra['Data De Emissão Do Título'], format='%d/%m/%y', errors='coerce')
+        safra = safra[safra['Data De Emissão Do Título'] == ontem]
+        safra['Valor Do Título'] = safra['Valor Do Título'].str.replace(',', '.').astype(float)
+        safratotal = safra['Valor Do Título'].sum()
 
-locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+        sofisa = remessa_sofisa[remessa_sofisa['Código de movimento remessa'] == 'Enviado']
+        sofisa['Data de emissão do boleto'] = pd.to_datetime(sofisa['Data de emissão do boleto'], format='%d/%m/%y', errors='coerce')
+        sofisa = sofisa[sofisa['Data de emissão do boleto'] == ontem]
+        sofisa['Valor nominal do boleto'] = sofisa['Valor nominal do boleto'].str.replace(',', '.').astype(float)
+        total_sofisa = sofisa['Valor nominal do boleto'].sum()
 
+        # Criação da tabela completa
+        santander = santander.rename(columns={'Data de emissão do boleto': 'Emissao Doc', 'Valor nominal do boleto': 'Valor', 'Código de movimento remessa': 'Ocorrencia', 'Nome do Banco': 'Nome do Banco'})
+        itauontem = itauontem.rename(columns={'DATA DE EMISSÃO': 'Emissao Doc', 'VALOR DO TÍTULO': 'Valor', 'CÓD. DE OCORRÊNCIA': 'Ocorrencia', 'NOME DO BANCO HEADER': 'Nome do Banco'})
+        sicoobontem = sicoobontem.rename(columns={'Data Emissão do Título': 'Emissao Doc', 'Valor do Título': 'Valor', 'Ocorrencia': 'Ocorrencia', 'Nome do Banco': 'Nome do Banco'})
+        unicred = unicred.rename(columns={'Data de emissão do Título': 'Emissao Doc', 'Valor do Título': 'Valor', 'Identificação da Ocorrência': 'Ocorrencia', 'Nome do Banco por Extenso': 'Nome do Banco'})
+        safra = safra.rename(columns={'Data De Emissão Do Título': 'Emissao Doc', 'Valor Do Título': 'Valor', 'Cod. Ocorrência': 'Ocorrencia', 'Nome do Banco': 'Nome do Banco'})
+        sofisa = sofisa.rename(columns={'Data de emissão do boleto': 'Emissao Doc', 'Valor nominal do boleto': 'Valor', 'Código de movimento remessa': 'Ocorrencia', 'Nome do Banco': 'Nome do Banco'})
 
-# Formatar os valores na coluna 'Valor' para o formato de moeda
-faturamento['Valor'] = faturamento['Valor'].map(lambda x: locale.currency(x, grouping=True))
+        tabelacompleta = pd.concat([santander, itauontem, sicoobontem, unicred, safra, sofisa], ignore_index=True)
+        tabelacompleta['Quantidade de Titulos'] = 1
 
-#RENOMEIA COLUNAS
-mapeamento = { 'descontado': 'Deságio','liquido': 'Valor Liquido', 'media_pagamento': 'Prazo Medio' }
+        total_por_banco = tabelacompleta.groupby(['Emissao Doc', 'Nome do Banco'])[['Quantidade de Titulos', 'Valor']].sum().reset_index()
+        total_por_banco = total_por_banco.rename(columns={'Valor': 'Total'})
 
+        total_por_banco['Emissao Doc'] = pd.to_datetime(total_por_banco['Emissao Doc'])
+        total_por_banco['Emissao Doc'] = total_por_banco['Emissao Doc'].dt.strftime('%d/%m/%Y')
+        total_por_banco['Total'] = total_por_banco['Total'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
-# Renomear as colunas usando o método rename()
-faturamento = faturamento.rename(columns=mapeamento)
-faturamento['Prazo Medio'] = faturamento['Prazo Medio'].round(2)
-#faturamento['Deságio'] = faturamento['Deságio'].round(2)
-faturamento.loc[faturamento['CET'] == '0.00%', 'TAC']= "Falta"
-faturamento.loc[faturamento['CET'] == '0.00%', 'Taxa de boleto']= "Falta"
-faturamento.loc[faturamento['CET'] == '0.00%', 'Deságio']= "Falta"
-faturamento.loc[faturamento['CET'] == '0.00%', 'IOF']= "Falta"
-faturamento.loc[faturamento['CET'] == '0.00%', 'CET']= "Falta"
+        return total_por_banco, santandertotal, totalunicred, safratotal, total_sofisa, itautotal, sicoobtotal
 
-
-faturamento['Data']=dt.datetime.now() 
-hoje.strftime("%d/%m/%Y")
-# Formatando a coluna 'Data' no formato 'dd/mm/yyyy'
-faturamento['Data'] = faturamento['Data'].dt.strftime('%d/%m/%Y')
-colunas = ['Data'] + [coluna for coluna in faturamento.columns if coluna != 'Data']
-faturamento = faturamento[colunas]
-
-
-#IMPORTANDO PARA O SISTEMA
-# App layout
+    except mysql.connector.Error as e:
+        print("Erro ao conectar-se ao banco de dados:", e)
+        return None, None
 def layout():
+    total_por_banco, santandertotal, totalunicred, safratotal, total_sofisa, itautotal, sicoobtotal = carregar_dados_remessa()
+
+    if total_por_banco is None:
+        return html.Div("Erro ao carregar dados da tabela de remessa.")
+
+
+
+
     return dbc.Container([
-    dbc.Row([
-        dbc.Col(
-            html.H3('Auditoria de Boletos', className='text-titulo',style={'margin-top': '50px'}),
-        ),
-        dbc.Col(
-            dcc.DatePickerRange(
+        dbc.Row([
+            dbc.Col(html.H3('Auditoria de Boletos', className='text-titulo', style={'margin-top': '50px'})),
+            dbc.Col(dcc.DatePickerRange(
                 id='date-picker-range',
                 display_format='DD/MM/YYYY',
-                start_date=faturamento['Data'].min(),
-                end_date=faturamento['Data'].max(),
-                style={'margin-top': '15px', 'margin-bottom': '15px'}  # Adiciona espaço acima e abaixo do filtro
-            ),
-            width=3,  # Ajuste a largura da coluna para mover o componente para a direita
-        ),
-    ]),
-    dbc.Row([
-        dbc.Col(
-            dash_table.DataTable(
-                id='data-table',    
-                data=faturamento.to_dict('records'),
-                columns=[{'name': col, 'id': col} for col in faturamento.columns],
-                # page_size=10,  # Defina o número de linhas por página
-                style_table={'overflowX': 'auto', 'width': '150%', 'margin-top':'30px','margin-left': '-25%', 'margin-right': 'auto', 'z-index': '0','border': 'none'},
-                style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold','color': 'Black','fontFamily': 'Arial'},
-                style_cell={'textAlign': 'left','fontSize': '15px','minWidth': '100px', 'fontFamily': 'Arial'}, # Estilo das células
-                        style_data_conditional=[
-                    {  'if': {'row_index': 'odd'},
-                       'backgroundColor': 'rgb(248, 248, 248)',
-                    },
-                       {
-                         'if': {'column_id': 'Valor Liquido'},
-                        'backgroundColor': 'green',
-                        'color': 'white',
-                    },
-                    {
-                        'if': {'column_id': 'CET'},
-                        'backgroundColor': 'red',
-                        'color': 'white',
-                    },
+                style={'margin-top': '50px'}
+            ), width=3),
+        ]),
+        dbc.Row([
+            dbc.Col([
+                dbc.CardGroup([
+                    dbc.Card([
+                        html.Legend('Santander'),
+                        html.H5(f'R$ {santandertotal:,.2f}'.replace(",", "X").replace(".", ",").replace("X", "."), id='card-title', style={}),
+                    ], className='card-quantidade-atendimentos card-style'),
+                    dbc.Card(
+                        html.Div(className='fa fa-university card-icon'),
+                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px','transition': '300ms','overflow': 'hidden'}
+                    ),
+                ], style={'width': '100%'})
+            ], width=2),
+            dbc.Col([
+                dbc.CardGroup([
+                    dbc.Card([
+                        html.Legend('Itau'),
+                        html.H5(f'R$ {itautotal:,.2f}'.replace(",", "X").replace(".", ",").replace("X", "."), id='card-title', style={}),
+                    ], className='card-quantidade-atendimentos card-style'),
+                    dbc.Card(
+                        html.Div(className='fa fa-university card-icon'),
+                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}                    ),
+                ], style={'width': '100%'})
+            ], width=2),
+            dbc.Col([
+                dbc.CardGroup([
+                    dbc.Card([
+                        html.Legend('Sicoob'),
+                        html.H5(f'R$ {sicoobtotal:,.2f}'.replace(",", "X").replace(".", ",").replace("X", "."), id='card-title', style={}),
+                    ], className='card-quantidade-atendimentos card-style'),
+                    dbc.Card(
+                        html.Div(className='fa fa-university card-icon'),
+                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}                    ),
+                ], style={'width': '100%'})
+            ], width=2),
+            dbc.Col([
+                dbc.CardGroup([
+                    dbc.Card([
+                        html.Legend('Unicred'),
+                        html.H5(f'R$ {totalunicred:,.2f}'.replace(",", "X").replace(".", ",").replace("X", "."), id='card-title', style={}),
+                    ], className='card-quantidade-atendimentos card-style'),
+                    dbc.Card(
+                        html.Div(className='fa fa-university card-icon'),
+                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}                    ),
+                ], style={'width': '100%'})
+            ], width=2),
+            dbc.Col([
+                dbc.CardGroup([
+                    dbc.Card([
+                        html.Legend('Safra'),
+                        html.H5(f'R$ {safratotal:,.2f}'.replace(",", "X").replace(".", ",").replace("X", "."), id='card-title', style={}),
+                    ], className='card-quantidade-atendimentos card-style'),
+                    dbc.Card(
+                        html.Div(className='fa fa-university card-icon'),
+                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}                    ),
+                ], style={'width': '100%'})
+            ], width=2),
+            dbc.Col([
+                dbc.CardGroup([
+                    dbc.Card([
+                        html.Legend('Sofisa'),
+                        html.H5(f'R$ {total_sofisa:,.2f}'.replace(",", "X").replace(".", ",").replace("X", "."), id='card-title', style={}),
+                    ], className='card-quantidade-atendimentos card-style'),
+                    dbc.Card(
+                        html.Div(className='fa fa-university card-icon'),
+                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}
+                    ),
+                ], style={'width': '100%'})
+            ], width=2),
+        ], style={'margin-top': '50px'}),
+ dbc.Row([
+            dbc.Col(
+                DataTable(
+                    id='datatable',
+                    columns=[
+                        {'name': i, 'id': i} for i in total_por_banco.columns
+                    ],
+                    data=total_por_banco.to_dict('records'),
+                 # page_size=10,  # Defina o número de linhas por página
+            style_table={'overflowX': 'auto', 
+                         'width': '100%', 
+                         'margin-top': '30px', 
+                         'margin-left': 'auto', 
+                         'margin-right': 'auto', 
+                         'z-index': '0', 
+                         'border': 'none',
+                         'border-radius': '10px',  
+                         'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.1)'},
+            style_header={'backgroundColor': 'rgb(230, 230, 230)', 
+                          'fontWeight': 'bold', 
+                          'color': 'black', 
+                          'fontFamily': 'Poppins, Arial',  
+                          'borderBottom': '2px solid #00aaff'}, 
+            style_cell={'textAlign': 'left', 
+                        'fontSize': '15px', 
+                        'minWidth': '100px', 
+                        'fontFamily': 'Poppins, Arial',  
+                        'padding': '10px',  
+                        'border': 'none'},
+    style_data_conditional=[
+                    {'if': {'row_index': 'odd'},
+                    'backgroundColor': 'rgb(248, 248, 248)'},
+                    {'if': {'column_id': 'Total'},
+                    'backgroundColor': 'rgb(232, 243, 230)',
+                    'color': 'Black'},
+                    {'if': {'column_id': 'CET'},
+                    'backgroundColor': 'red',
+                    'color': 'white'},
+                    {'if': {'state': 'active'},  
+                    'backgroundColor': 'rgba(0, 170, 255, 0.3)',  
+                    'border': 'none'},
+                    {'if': {'state': 'selected'},  
+                    'backgroundColor': 'rgba(0, 170, 255, 0.1)',  
+                    'border': 'none'}
                 ],
-            ),
+                style_as_list_view=True
         ),
-    ]),
-        # Adicione o código JavaScript aqui
-    html.Script('''
-        document.addEventListener('keydown', function(event) {
-            if (event.key === "F5") {
-                location.reload(true);
-            }
-        });
-    '''),
-    dbc.Row([
-        dbc.Col(
-            html.H3(f'Receita Liquida R$ {faturamentototal}', style={'margin-top': '20px', 'fontSize': 20, 'fontFamily': 'Calibri', 'color': 'black', 'text-align': 'right', 'fontWeight': 'bold'}),
-            width={'size': 5, 'offset': 6}  # Adiciona um offset para mover o componente para a direita
-        ),
-    ]),
-])
-
-# Callback para atualizar a tabela com base nas datas selecionadas
-#@app.callback(Output('data-table', 'data'),
- #             [Input('date-picker-range', 'start_date'),
-  #             Input('date-picker-range', 'end_date')])
-#def update_table(start_date, end_date):
- #   filtered_df = faturamento[(faturamento['Data'] >= start_date) & (faturamento['Data'] <= end_date)]
-  #  return filtered_df.to_dict('records')
-
+    ),
+        ], style={'flex': '1 1 0', 'margin-top': '50px', 'height': 'auto'})
+    ], fluid=True, style={'width': '100%', 'height': '100vh', 'padding': '0px', 'margin': '0px'})

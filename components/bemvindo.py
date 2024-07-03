@@ -14,43 +14,35 @@ favicon = 'money_upico.ico'
 app.server.favicon = favicon
 
 def layout(username):
-    if username == "lucimara":
+    if username in ["lucimara", "eleandro", "antonio", "taiane", "douglas", "caue"]:
         username = username.capitalize()
-    if username == "eleandro":
-        username = username.capitalize()
-    if username == "antonio":
-        username = username.capitalize() 
-    if username == "taiane":
-        username = username.capitalize()   
-    if username == "douglas":
-        username = username.capitalize()  
-    if username == "caue":
-        username = username.capitalize()                    
+
     return html.Div(className='pagina-initial', children=[
         html.Header(
-            html.Img(src='/assets/logobranco.png', className="logo-img", style={'width': '15%',}),
-            style={
-                'background-color': '#008B8B',#className='pagina-initial'
-                'padding': '15px',
-                'text-align': 'center',
-                'font-family': 'Arial, sans-serif',
-                'text-shadow': '2px 2px 4px rgba(0, 0, 0, 0.3)',
-                'letter-spacing': '2px',
-            }
+            children=[
+                html.Img(src='/assets/logobranco.png', className="logo-img"),
+                html.Div(className="header-title", children="Trimed Financ"),
+            ],
+            className="main-header"
         ),
-        html.I(className="fa fa-user", style={'font':'Arial','position': 'absolute', 'height': '220vh', 'top': '150px', 'right': '80px', 'font-size': '18px', 'color': '#222222', 'font-weight': 'bold'}),
-        html.H1(f"Olá, {username}",className="text-user"),# style={'font-weight': 'bold','font-family': 'Bahnschrift','position': 'absolute', 'top': '150px', 'right': '110px', 'font-size': '16px', 'color': '#222222'}),
+        html.I(className="fa fa-user", style={'position': 'absolute', 'top': '150px', 'right': '80px', 'font-size': '18px', 'color': '#222222', 'font-weight': 'bold'}),
+        html.H1(f"Olá, {username}", className="text-user"),
         html.Div([
             html.Iframe(className='animation1',
-                src="https://lottie.host/embed/ed87547d-213b-4beb-81b1-084c75e27473/Hj9y7DHwau.json",
-            ),
+                        src="https://lottie.host/embed/ed87547d-213b-4beb-81b1-084c75e27473/Hj9y7DHwau.json"),
             html.Iframe(className='animation2',
-                src="https://lottie.host/embed/4f864203-b546-48b6-97e6-e98a8b74d293/RytEztFHFm.json",
-            )
+                        src="https://lottie.host/embed/4f864203-b546-48b6-97e6-e98a8b74d293/RytEztFHFm.json")
         ], className='animation-container'),
         html.Div([
             dbc.Button('Continuar para Menu Principal', id='/home', href='/home', className="text-button"),
-
-
-        ])
+        ]),
+        html.Footer(
+            children=[
+                html.Span("© 2024 Trimed Financ. Todos os direitos reservados.", className="footer-left"),
+                html.Span("Desenvolvido por Eleandro S. Martins", className="footer-right")
+            ],
+            className="text-footer"
+        ),
     ])
+
+# Example of a basic callback

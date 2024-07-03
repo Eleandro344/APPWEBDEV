@@ -289,5 +289,6 @@ def display_page(pathname):
         return dcc.Location(id="url", pathname="/login", refresh=True)
 
 if __name__ == '__main__':
-    app.run_server(debug=False, host='10.1.1.24', port=8050, dev_tools_hot_reload=False)
- #  3app.run_server(debug=True, use_reloader=True, host='0.0.0.0', port=8050, dev_tools_hot_reload=True)
+    app.run_server(debug=False, host='10.1.1.15', port=8050, dev_tools_hot_reload=False)
+    # app.run_server(debug=True, use_reloader=True, host='0.0.0.0', port=8050, dev_tools_hot_reload=True)
+    

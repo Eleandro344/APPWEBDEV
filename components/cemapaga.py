@@ -47,16 +47,21 @@ def carregar_dados_remessa():
         df_ordenado.loc[df_ordenado['Status Atual'] == 'Boleto Baixado', 'Ordem'] = "Não pagar"
         df_ordenado.loc[df_ordenado['Status Atual'] == 'Baixado', 'Ordem'] = "Não pagar"
         df_ordenado.loc[df_ordenado['Status Atual'] == 'BAIXA SIMPLES', 'Ordem'] = "Não pagar"
+        df_ordenado.loc[df_ordenado['Status Atual'] == 'Liquidação de Título Trocado', 'Ordem'] = "Não pagar"
+
+
 
         df_ordenado.loc[df_ordenado['Ocorrencia'] == 'Solicitaçã', 'Ocorrencia'] = "Solicitado Baixa"
 
         df_ordenado['Vencimento'] = pd.to_datetime(df_ordenado['Vencimento'], format='%Y-%m-%d')
 
-        data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=3)
+        data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=30)
         df_ordenado = df_ordenado.loc[df_ordenado['Vencimento'] >= data_hoje_menos_5_dias]
 
         df_ordenado = df_ordenado.sort_values(by='Vencimento')
         df_ordenado = df_ordenado.drop(columns=['Ocorrencia'])
+        df_ordenado = df_ordenado.drop(columns=['Data da Ocorrencia','CNPJ'])
+        # df_ordenado = df_ordenado.loc[df_ordenado['Ordem'] == 'Cema Paga']
 
         return df_ordenado
     except mysql.connector.Error as e:
