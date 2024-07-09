@@ -95,7 +95,7 @@
     padding: 2rem 1rem;
     background-color: #008B8B;
     z-index: 1050;
-    transition: width 0.1s ease-in-out;
+    transition: width 0.3s ease-in-out;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 1.2);
 
 }
@@ -471,4 +471,15 @@ font-family: 'Poppins', sans-serif;
     transform: scale(1.50); 
     box-shadow: 0 8px 16px rgba(0, 0, 2, 0.3);  /* Sombra aumentada ao passar o mouse */
     background-color: rgb(232, 243, 230); /* Cor de fundo para indicar sucesso */
+}
+.text-titulototal{
+    margin-right: 25px;
+    display: flex;
+    position: absolute;
+    right: 0;
+    padding: 20px;    
+    font-size: 20px;
+    font-family: 'Poppins', sans-serif;
+    color: #000;
+
 }

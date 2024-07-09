@@ -78,7 +78,7 @@ def carregar_dados_retorno():
         retornounicred_bd = pd.read_sql(consulta_retorno, con=mydb)
         mydb.close()
         new_column_order = [
-            'DATA DE OCORRÊNCIA', 
+            'DATA DE GERAÇÃO HEADER', 
             'CÓD. DE OCORRÊNCIA', 
             'CODIGO DO DOC', 
             'VALOR DO TÍTULO',
@@ -146,8 +146,7 @@ def carregar_dados_retorno():
 
 # Reorder the columns
         retornounicred_bd = retornounicred_bd[new_column_order]        
-        retornounicred_bd['DATA DE OCORRÊNCIA'] = pd.to_datetime(retornounicred_bd['DATA DE OCORRÊNCIA']).dt.strftime('%Y%m%d')
-        retornounicred_bd['DATA DE OCORRÊNCIA'] = pd.to_datetime(retornounicred_bd['DATA DE OCORRÊNCIA'])
+        retornounicred_bd = retornounicred_bd.loc[:, ~retornounicred_bd.columns.duplicated()]
 
         # # Ordenar o DataFrame pela coluna 'Data da Ocorrência' de forma crescente
       #  df_retorno = df_retorno.sort_values(by='DATA DE GERAÇÃO HEADER')
@@ -155,16 +154,20 @@ def carregar_dados_retorno():
 
 
         novos_nomes = {
-            'DATA DE OCORRÊNCIA': 'Data da Ocorrencia',
+            'DATA DE GERAÇÃO HEADER': 'Data da Ocorrencia',
             'CÓD. DE OCORRÊNCIA': 'Ocorrencia',
             # ... adicione os outros nomes conforme necessário
         }
         retornounicred_bd.rename(columns=novos_nomes, inplace=True)
-        retornounicred_bd = retornounicred_bd.sort_values(by='Data da Ocorrencia', ascending=True)
-       # retornounicred_bd['Data da Ocorrencia'] = pd.to_datetime(retornounicred_bd['Data da Ocorrencia'])
+        retornounicred_bd.dropna(subset=['Data da Ocorrencia'], inplace=True)
 
-        retornounicred_bd = retornounicred_bd.sort_values(by=['Data da Ocorrencia', 'NÚMERO SEQUENCIAL'], ascending=[True, True])
-        retornounicred_bd.loc[retornounicred_bd['Ocorrencia'] == 'BAIXA COM TRANSFERÊNCIA PARA D', 'Ocorrencia'] = "TROCADO"
+        retornounicred_bd['Data da Ocorrencia'] = pd.to_datetime(retornounicred_bd['Data da Ocorrencia'], format='%d%m%y')
+
+        retornounicred_bd = retornounicred_bd.sort_values(by='Data da Ocorrencia', ascending=True)
+        retornounicred_bd['Data da Ocorrencia'] = pd.to_datetime(retornounicred_bd['Data da Ocorrencia'])
+
+       # retornounicred_bd = retornounicred_bd.sort_values(by=['Data da Ocorrencia', 'NÚMERO SEQUENCIAL'], ascending=[True, True])
+        retornounicred_bd.loc[retornounicred_bd['Ocorrencia'] == 'BAIXA COM TRANSFERÊNCIA PARA D', 'Ocorrencia'] = "BAIXA COM TRANSFERÊNCIA PARA DESCONTO"
        # retornounicred_bd.loc[retornounicred_bd['Ocorrencia'] == 'BAIXA COM TRANSFERÊNCIA PARA D', 'Ocorrencia'] = "DEVOLVIDO"
 
 

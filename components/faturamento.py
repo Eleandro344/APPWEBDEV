@@ -16,8 +16,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import calendar
 import mysql.connector
+import plotly.express as px
+
 from dash_table import DataTable
-import locale
 
 def carregar_dados_remessa():
     try:
@@ -80,7 +81,7 @@ def carregar_dados_remessa():
 
 
         safra = remessa_safra[remessa_safra['Cod. Ocorrência'] == 'REMESSA DE TÍTULOS']
-        safra['Nome do Banco'] = "Safra"        
+        safra['Nome do Banco'] = "SAFRA"        
         safra['Data De Emissão Do Título'] = pd.to_datetime(safra['Data De Emissão Do Título'], format='%d/%m/%y', errors='coerce')
         safra = safra[safra['Data De Emissão Do Título'] == ontem]
         safra['Valor Do Título'] = safra['Valor Do Título'].str.replace(',', '.').astype(float)
@@ -105,24 +106,46 @@ def carregar_dados_remessa():
 
         total_por_banco = tabelacompleta.groupby(['Emissao Doc', 'Nome do Banco'])[['Quantidade de Titulos', 'Valor']].sum().reset_index()
         total_por_banco = total_por_banco.rename(columns={'Valor': 'Total'})
-
+    
         total_por_banco['Emissao Doc'] = pd.to_datetime(total_por_banco['Emissao Doc'])
         total_por_banco['Emissao Doc'] = total_por_banco['Emissao Doc'].dt.strftime('%d/%m/%Y')
+        grafico = total_por_banco
+
+
+
         total_por_banco['Total'] = total_por_banco['Total'].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
-        return total_por_banco, santandertotal, totalunicred, safratotal, total_sofisa, itautotal, sicoobtotal
+        return total_por_banco, santandertotal, grafico,totalunicred, safratotal, total_sofisa, itautotal, sicoobtotal
 
     except mysql.connector.Error as e:
         print("Erro ao conectar-se ao banco de dados:", e)
         return None, None
+    
+
+
 def layout():
-    total_por_banco, santandertotal, totalunicred, safratotal, total_sofisa, itautotal, sicoobtotal = carregar_dados_remessa()
+    total_por_banco, santandertotal, grafico, totalunicred, safratotal, total_sofisa, itautotal, sicoobtotal = carregar_dados_remessa()
 
     if total_por_banco is None:
         return html.Div("Erro ao carregar dados da tabela de remessa.")
-
-
-
+    grafico["Total"] = grafico["Total"].str.replace("R$", "").str.replace(".", "").str.replace(",", ".").astype(float)
+    grafico['Total'] = grafico['Total'].astype(float)
+    total_bruto = grafico['Total'].sum()
+    # Create a modern bar chart for the total values per bank
+    fig = go.Figure(data=[
+        go.Bar(
+            x=grafico['Nome do Banco'],
+            y=grafico['Total'],
+            marker_color=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
+        )
+    ])
+    fig.update_layout(
+        title='Total por Banco',
+        xaxis_title='Nome do Banco',
+        yaxis_title='Total',
+        template='plotly_white',
+        font=dict(family='Poppins, Arial', size=14)
+    )
 
     return dbc.Container([
         dbc.Row([
@@ -154,7 +177,8 @@ def layout():
                     ], className='card-quantidade-atendimentos card-style'),
                     dbc.Card(
                         html.Div(className='fa fa-university card-icon'),
-                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}                    ),
+                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}
+                    ),
                 ], style={'width': '100%'})
             ], width=2),
             dbc.Col([
@@ -165,7 +189,8 @@ def layout():
                     ], className='card-quantidade-atendimentos card-style'),
                     dbc.Card(
                         html.Div(className='fa fa-university card-icon'),
-                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}                    ),
+                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}
+                    ),
                 ], style={'width': '100%'})
             ], width=2),
             dbc.Col([
@@ -176,7 +201,8 @@ def layout():
                     ], className='card-quantidade-atendimentos card-style'),
                     dbc.Card(
                         html.Div(className='fa fa-university card-icon'),
-                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}                    ),
+                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}
+                    ),
                 ], style={'width': '100%'})
             ], width=2),
             dbc.Col([
@@ -187,7 +213,8 @@ def layout():
                     ], className='card-quantidade-atendimentos card-style'),
                     dbc.Card(
                         html.Div(className='fa fa-university card-icon'),
-                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}                    ),
+                        color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}
+                    ),
                 ], style={'width': '100%'})
             ], width=2),
             dbc.Col([
@@ -203,7 +230,7 @@ def layout():
                 ], style={'width': '100%'})
             ], width=2),
         ], style={'margin-top': '50px'}),
- dbc.Row([
+        dbc.Row([
             dbc.Col(
                 DataTable(
                     id='datatable',
@@ -211,45 +238,29 @@ def layout():
                         {'name': i, 'id': i} for i in total_por_banco.columns
                     ],
                     data=total_por_banco.to_dict('records'),
-                 # page_size=10,  # Defina o número de linhas por página
-            style_table={'overflowX': 'auto', 
-                         'width': '100%', 
-                         'margin-top': '30px', 
-                         'margin-left': 'auto', 
-                         'margin-right': 'auto', 
-                         'z-index': '0', 
-                         'border': 'none',
-                         'border-radius': '10px',  
-                         'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.1)'},
-            style_header={'backgroundColor': 'rgb(230, 230, 230)', 
-                          'fontWeight': 'bold', 
-                          'color': 'black', 
-                          'fontFamily': 'Poppins, Arial',  
-                          'borderBottom': '2px solid #00aaff'}, 
-            style_cell={'textAlign': 'left', 
-                        'fontSize': '15px', 
-                        'minWidth': '100px', 
-                        'fontFamily': 'Poppins, Arial',  
-                        'padding': '10px',  
-                        'border': 'none'},
-    style_data_conditional=[
-                    {'if': {'row_index': 'odd'},
-                    'backgroundColor': 'rgb(248, 248, 248)'},
-                    {'if': {'column_id': 'Total'},
-                    'backgroundColor': 'rgb(232, 243, 230)',
-                    'color': 'Black'},
-                    {'if': {'column_id': 'CET'},
-                    'backgroundColor': 'red',
-                    'color': 'white'},
-                    {'if': {'state': 'active'},  
-                    'backgroundColor': 'rgba(0, 170, 255, 0.3)',  
-                    'border': 'none'},
-                    {'if': {'state': 'selected'},  
-                    'backgroundColor': 'rgba(0, 170, 255, 0.1)',  
-                    'border': 'none'}
-                ],
-                style_as_list_view=True
-        ),
-    ),
-        ], style={'flex': '1 1 0', 'margin-top': '50px', 'height': 'auto'})
+                    style_table={'overflowX': 'auto', 'width': '100%', 'margin-top': '30px', 'margin-left': 'auto', 'margin-right': 'auto', 'z-index': '0', 'border': 'none', 'border-radius': '10px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.1)'},
+                    style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold', 'color': 'black', 'fontFamily': 'Poppins, Arial', 'borderBottom': '2px solid #00aaff'},
+                    style_cell={'textAlign': 'left', 'fontSize': '15px', 'minWidth': '100px', 'fontFamily': 'Poppins, Arial', 'padding': '10px', 'border': 'none'},
+                    style_data_conditional=[
+                        {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248, 248, 248)'},
+                        {'if': {'column_id': 'Total'}, 'backgroundColor': 'rgb(232, 243, 230)', 'color': 'Black'},
+                        {'if': {'column_id': 'CET'}, 'backgroundColor': 'red', 'color': 'white'},
+                        {'if': {'state': 'active'}, 'backgroundColor': 'rgba(0, 170, 255, 0.3)', 'border': 'none'},
+                        {'if': {'state': 'selected'}, 'backgroundColor': 'rgba(0, 170, 255, 0.1)', 'border': 'none'}
+                    ],
+                    style_as_list_view=True
+                ),
+            ),
+        ], style={'flex': '1 1 0', 'margin-top': '50px', 'height': 'auto'}),
+        dbc.Row([
+        dbc.Col(html.H4(f'Total bruto R$ {total_bruto:,.2f}'.replace(",", "X").replace(".", ",").replace("X", "."),className='text-titulototal'))]),   
+        dbc.Row([
+            dbc.Col(
+                dcc.Graph(
+                    id='bar-chart',
+                    figure=fig
+                )
+            )
+            
+        ], style={'margin-top': '50px'})
     ], fluid=True, style={'width': '100%', 'height': '100vh', 'padding': '0px', 'margin': '0px'})
