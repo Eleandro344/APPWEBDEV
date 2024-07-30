@@ -2,7 +2,7 @@ import dash
 import pandas as pd
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from components import avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo,cemapaga,sequencialarquivos,itau,sicoob,trocados
+from components import agendamentos, avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo,cemapaga,itau,sicoob,trocados
 from dash import Dash, dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
@@ -174,7 +174,7 @@ devolucao_layout = devolucao.layout()
 santander_layout = santander.layout()
 trocados_layout = trocados.layout()
 sofisa_layout = sofisa.layout()
-sequencialarquivos_layout= sequencialarquivos.layout()
+sequencialarquivos_layout= agendamentos.layout()
 safra_layout = safra.layout()
 avisos_layout = avisos.layout()
 itau_layout = itau.layout()
@@ -211,6 +211,7 @@ VALID_USERNAME_PASSWORD_PAIRS = {
     'taiane':'2024',
     'douglas':'2024',
     'caue':'2024',
+    'andre':'2023'
 
 
 
@@ -224,6 +225,7 @@ PERMISSIONS = {
     'taiane': 2, 
     'douglas':1,
     'caue':2,   
+    'andre':6,    
 }
 auth = dash_auth.BasicAuth(app, VALID_USERNAME_PASSWORD_PAIRS)
 
@@ -235,6 +237,17 @@ def check_permission(username, pathname):
             return "/semacesso"  # Redireciona usuários com permissão 1 da página de faturamento para a página inicial
         if user_permission ==9 and (pathname == "/devolucao" or pathname == "/banco"):
             return "/semacesso"  # Redireciona usuários com permissão 1 da página de faturamento para a página inicial
+        if user_permission ==6 and (pathname == "/faturamento" or pathname == "/banco" or pathname == "/sicoob"
+        or pathname == "/banco"   
+        or pathname == "/santander"
+        or pathname == "/safra"
+        or pathname == "/itau"
+        or pathname == "/rastrear"
+        or pathname == "/trocados"
+        or pathname == "/cemapaga"
+        or pathname == "/sicoob"):
+            return "/semacesso"  # Redireciona usuários com permissão 1 da página de faturamento para a página inicial        
+        
     return pathname
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
@@ -276,7 +289,7 @@ def display_page(pathname):
         elif pathname == "/itau":
             return itau.layout()        
         elif pathname == "/sequencialarquivos":
-            return sequencialarquivos.layout()        
+            return agendamentos.layout()        
         elif pathname == "/rastrear":
             return rastrear.layout()
         elif pathname == "/avisos":
@@ -289,6 +302,6 @@ def display_page(pathname):
         return dcc.Location(id="url", pathname="/login", refresh=True)
 
 if __name__ == '__main__':
-    app.run_server(debug=False, host='10.1.1.15', port=8050, dev_tools_hot_reload=False)
-    #app.run_server(debug=True, use_reloader=True, host='0.0.0.0', port=8050, dev_tools_hot_reload=True)
+   # app.run_server(debug=False, host='10.1.1.15', port=8050, dev_tools_hot_reload=False)
+    app.run_server(debug=True, use_reloader=True, host='0.0.0.0', port=8040, dev_tools_hot_reload=True)
     

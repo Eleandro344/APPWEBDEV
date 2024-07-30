@@ -215,17 +215,6 @@ html {
     font-weight: bold;
     text-align: center;
 }
-.text-devolucao{
-    margin-bottom: 20px;
-    margin-top: 50px;
-    font-size: 25px;
-    font-family:'Poppins', sans-serif; 
-    font-weight: bold;
-    color: black;
-    text-align: left;
-    margin-bottom: 20px;
-
-}
 
 /* Estilos para a tabela */
     .table-font {
@@ -483,3 +472,36 @@ font-family: 'Poppins', sans-serif;
     color: #000;
 
 }
+
+
+.text-devolucao2 {
+    /* margin-bottom: 20px; */
+    /* margin-top: 50px; */
+    font-size: 15px;
+    font-family:'Poppins', sans-serif; 
+    color: #0e0e0d;
+    text-align: left;
+    /* margin-bottom: 20px; */
+    background-color: #FFFFE0;
+
+
+}
+.text-semacesso2{
+    font-family:'Poppins', sans-serif;
+    font-size: 25px;
+    text-align: center;
+    
+}
+.text-devolucao3 {
+    /* margin-bottom: 20px; */
+    /* margin-top: 50px; */
+    font-size: 15px;
+    font-family:'Poppins', sans-serif; 
+    color: #0e0e0d;
+    text-align: left;
+    /* margin-bottom: 20px; */
+    background-color: #E0FFFF;
+
+}
+
+

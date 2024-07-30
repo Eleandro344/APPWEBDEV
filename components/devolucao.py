@@ -1,4 +1,4 @@
-from dash import html, Input, Output, State, dcc
+from dash import html, Input, Output, State, dcc, callback_context
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 import dash_table
@@ -6,7 +6,8 @@ import mysql.connector
 import pandas as pd
 from datetime import datetime, timedelta
 from app import app
-
+import json
+import dash
 # Função para carregar os dados da tabela de remessa
 def carregar_dados_remessa():
     try:
@@ -17,7 +18,7 @@ def carregar_dados_remessa():
             password='s@BRtR1m3d',
             database='db_sabertrimed',
         )
-        # Execute a consulta SQL para selecionar todos os registros da tabela "cema_paga1"
+        # Execute a consulta SQL para selecionar todos os registros da tabela "devolucao"
         consulta = "SELECT * FROM devolucao"
         client_df = pd.read_sql(consulta, con=mydb)
 
@@ -25,42 +26,86 @@ def carregar_dados_remessa():
         client_df2 = client_df
         client_df2['dia_chegou'] = pd.to_datetime(client_df2['dia_chegou'], format='%d/%m/%y')
 
-
         data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=0)
-        # client_df2['dia_chegou'] = pd.to_datetime(client_df2['dia_chegou'], errors='coerce')
+
+
+
+        #TEMPO A CAMINHO 
 
         client_df2['Tempo(a caminho)'] = (client_df2['Data'] - data_hoje_menos_5_dias).dt.days
-        client_df2['Tempo(No estoque)'] = (client_df2['dia_chegou'] - data_hoje_menos_5_dias).dt.days
-        client_df['Tempo(a caminho)']  =   client_df2['Tempo(a caminho)']
-        client_df['Tempo(No estoque)']  =  client_df2['Tempo(No estoque)'] 
+
+
+
+
+        client_df['Tempo(a caminho)']  = client_df2['Tempo(a caminho)']
+
         client_df['Data'] = pd.to_datetime(client_df['Data'])
         client_df['dia_chegou'] = pd.to_datetime(client_df['dia_chegou'])
+        client_df['chegou'] = client_df['chegou'].astype(str) 
+        client_df['chegou'] = "Sim"        
+        client_df.loc[client_df['Data'] != 0, 'em_transito'] = 'Sim'
+
+        # TEMPO DE CONFERENCIA
+
+        client_df['Tempo(conferida)'] = (client_df['dia_chegou'] - data_hoje_menos_5_dias).dt.days
+
+        client_df.loc[client_df['dia_chegou'].isna(), 'Tempo(conferida)'] = 'Não chegou'
+
+        # client_df.loc[client_df['conferida']!= "none",'Tempo(conferida)' = 'Conferida']
+        client_df.loc[client_df['conferida'].notna(), 'Tempo(conferida)'] = 'Conferida'
+
+
+
+
 
         # Data atual
         data_hoje = pd.Timestamp.today().normalize()
-
         # Calculando 'Tempo(a caminho)' e 'Tempo(No estoque)'
         client_df['Tempo(a caminho)'] = (data_hoje - client_df['Data']).dt.days
-        client_df['Tempo(No estoque)'] = (data_hoje - client_df['dia_chegou']).dt.days
 
-        # Função para parar de contar 'Tempo(No estoque)' quando 'finalizado' é 'Sim'
-        def manter_tempo_no_estoque(row, valor_anterior):
-            if row['finalizado'] == 'Sim':
-                return valor_anterior
-            else:
-                return (data_hoje - row['dia_chegou']).days
+        client_df['dia_chegou'] = client_df['dia_chegou'].dt.strftime('%d/%m/%y')
+        # client_df.loc[client_df['finalizado']!= "Não", 'Tempo(No estoque)'] = 'Concluida'
+        client_df.loc[~client_df['dia_chegou'].isna(), 'Tempo(a caminho)'] = 'ja Chegou'
 
-        # Aplicando a função
-        valor_anterior = None
-        for index, row in client_df.iterrows():
-            if index == 0:
-                valor_anterior = client_df.loc[index, 'Tempo(No estoque)']
-            else:
-                valor_anterior = manter_tempo_no_estoque(row, valor_anterior)
-                client_df.at[index, 'Tempo(No estoque)'] = valor_anterior
+        # client_df['conferida'] = client_df['conferida'].dt.strftime('%d/%m/%y')
 
-        client_df        
-        client_df['dia_chegou'] = client_df['dia_chegou'].dt.strftime('%d/%m/%y') 
+
+        #TEMPO LANÇAMENTO
+
+        client_df2['conferida'] = pd.to_datetime(client_df2['conferida'], format='%d/%m/%y')
+
+        client_df['Tempo(lançado)'] = (client_df['conferida'] - data_hoje_menos_5_dias).dt.days
+
+
+        # client_df.loc[client_df['finalizado']!= "Não",'Tempo(lançado)'= 'Concluida']
+        client_df.loc[(client_df['finalizado'] != 'Não') & (client_df['finalizado'].notna()), 'Tempo(lançado)'] = 'Concluida'
+
+        # client_df.loc[client_df['conferida'].notna(), 'Tempo(conferida)'] = 'Conferida'
+
+
+
+
+
+
+        client_df.loc[client_df['dia_chegou'].isna(), 'chegou'] = 'Não'
+        client_df.loc[client_df['finalizado'].isna(), 'finalizado'] = 'Não'
+
+        client_df.loc[~client_df['dia_chegou'].isna(), 'Tempo(a caminho)'] = 'ja Chegou'
+        client_df['Tempo(conferida)'] = client_df['Tempo(conferida)'].apply(lambda x: abs(float(x)) if isinstance(x, (int, float)) else x)
+
+        client_df['Tempo(lançado)'] = client_df['Tempo(lançado)'].apply(lambda x: abs(float(x)) if isinstance(x, (int, float)) else x)
+        client_df['conferida'] = pd.to_datetime(client_df['conferida'], errors='coerce')
+        client_df['conferida'] = client_df['conferida'].dt.strftime('%d/%m/%y')
+        # client_df['Data'] = pd.to_datetime(client_df['Data'], errors='coerce')
+        # client_df['Data'] = client_df['Data'].dt.strftime('%d/%m/%y')        
+
+
+        client_df['delete-button'] = [
+            f'<button class="btn btn-danger" type="button" id="delete-button-{index}">Deletar</button>'
+            for index in range(len(client_df))
+        ]
+
+
         return client_df
     except mysql.connector.Error as e:
         print("Erro ao conectar-se ao banco de dados:", e)
@@ -68,10 +113,14 @@ def carregar_dados_remessa():
 
 # Carregar os dados da tabela de remessa
 client_df = carregar_dados_remessa()
+client_df = client_df.drop(columns=["delete-button"])
+
 
 def layout():
     # Carregar os dados da tabela de remessa
     client_df = carregar_dados_remessa()
+    client_df = client_df.drop(columns=["delete-button"])
+
     if client_df is None:
         # Se houve um erro ao carregar os dados, retornar uma mensagem de erro
         return html.Div("Erro ao carregar dados da tabela de remessa.")
@@ -97,6 +146,14 @@ def layout():
                             ]
                         )
                     ),
+                    dbc.Card(
+                        dbc.CardBody(
+                            [
+                                dbc.Label("Pre_nota"),
+                                dbc.Input(id="Prenota-input", type="text", placeholder="Digite a Prenota"),
+                            ]
+                        )
+                    ),                    
                     dbc.Card(
                         dbc.CardBody(
                             [
@@ -132,6 +189,8 @@ def layout():
             html.Div(
                 [
                     html.H1("Devoluções cadastradas", className="text-devolucao"),
+                      html.H4("Estoque preencha as colunas (Amarelas)", className="text-devolucao2"),
+                      html.H4("Financeiro preencha as colunas (Azul)", className="text-devolucao3"),
                     dbc.Row(
                         [
                             dbc.Col(
@@ -185,19 +244,39 @@ def layout():
                         style={'margin-bottom': '20px'}
                     ),
                     dash_table.DataTable(
-                        id='client-table',
-                        columns=[
-                            {'name': col, 'id': col, 'editable': True if col in ['em_transito', 'chegou','dia_chegou' ,'finalizado'] else False}
-                            for col in client_df.columns
-                        ],
-                        data=client_df.to_dict('records'),
-                        style_table={'overflowX': 'auto', 'width': '100%', 'margin-left': '0%', 'margin-right': 'auto', 'z-index': '0'},
-                        style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold'},
-                        style_cell={'textAlign': 'left', 'minWidth': '100px', 'font-family': 'Calibri'},
-                        style_data_conditional=[
-                            {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248, 248, 248)'},
-                        ],
-                    ),
+                            id='client-table',
+                            columns=[
+                                {'name': col, 'id': col, 'editable': True if col in ['em_transito', 'chegou','dia_chegou', 'conferida','finalizado'] else False}
+                                for col in client_df.columns
+                            ] + [
+                                {'name': 'Deletar', 'id': 'delete-button', 'type': 'text', 'presentation': 'markdown'},
+                            ],
+                            data=client_df.to_dict('records'),
+                            markdown_options={"html": True},
+                            style_table={'overflowX': 'auto', 'width': '100%', 'margin-top': '30px', 'margin-left': '-2%', 'margin-right': 'auto', 'z-index': '0', 'border': 'none', 'border-radius': '10px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.1)'},
+                            style_header={'backgroundColor': 'rgb(230, 230, 230)', 'color': '#0e0e0d','font-size ':'12px' ,'fontFamily': 'Poppins, Arial', 'borderBottom': '1px solid #00aaff'},
+                                style_cell={
+                                    'textAlign': 'left',
+                                    'fontFamily': 'Poppins, Arial',
+                                    'font-size': '13px',  # Reduza o tamanho da fonte
+                                    'minWidth': '100px',   # Reduza a largura mínima
+                                    'maxWidth': '130px',  # Defina a largura máxima
+                                    'padding': '5p',
+                                    'whiteSpace': 'normal' 
+          # Permite quebra de linha
+
+                                },
+                                style_data_conditional=[
+                                {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248, 248, 248)'},
+                                {'if': {'column_id': 'finalizado'}, 'backgroundColor': '#00FFFF','color': 'Black'},
+                                {'if': {'column_id': 'dia_chegou'}, 'backgroundColor': '#f3ef1d','color': 'Black'},
+                                {'if': {'column_id': 'conferida'}, 'backgroundColor': '#f3ef1d','color': 'Black'},
+
+
+                            ],
+                        ),
+
+
                 ]
             ),
             html.Div(
@@ -208,7 +287,7 @@ def layout():
         ]
     )
 
-def insert_data_into_database(cliente, transporte, volumes, motivo, data,):
+def insert_data_into_database(cliente, transporte, Pre_nota, volumes, motivo, data):
     mydb = mysql.connector.connect(
         host='db_sabertrimed.mysql.dbaas.com.br',
         user='db_sabertrimed',
@@ -218,34 +297,134 @@ def insert_data_into_database(cliente, transporte, volumes, motivo, data,):
 
     cursor = mydb.cursor()
 
-    query = "INSERT INTO devolucao (Cliente, Transporte, Volumes, Motivo, Data) VALUES (%s, %s, %s, %s, %s)"
-    values = (cliente, transporte, volumes, motivo, data,)
+    query = "INSERT INTO devolucao (Cliente, Transporte, Pre_nota, Volumes, Motivo, Data) VALUES (%s, %s, %s, %s, %s, %s)"
+    values = (cliente, transporte, Pre_nota, volumes, motivo, data)
 
     cursor.execute(query, values)
-
     mydb.commit()
+    cursor.close()
     mydb.close()
 
+def delete_data_from_database(cliente, transporte,Pre_nota, volumes, motivo, data):
+    mydb = mysql.connector.connect(
+        host='db_sabertrimed.mysql.dbaas.com.br',
+        user='db_sabertrimed',
+        password='s@BRtR1m3d',
+        database='db_sabertrimed',
+    )
+
+    cursor = mydb.cursor()
+
+    query = "DELETE FROM devolucao WHERE Cliente = %s AND Transporte = %s AND Pre_nota = %s AND Volumes = %s AND Motivo = %s AND Data = %s"
+    values = (cliente, transporte, Pre_nota, volumes, motivo, data)
+
+    cursor.execute(query, values)
+    mydb.commit()
+    cursor.close()
+    mydb.close()
+    
+
 @app.callback(
-    Output("submit-button", "n_clicks"),
-    [Input("submit-button", "n_clicks")],
+    Output('client-table', 'data', allow_duplicate=True),
+    [Input('submit-button', 'n_clicks')],
     [
-        State("cliente-input", "value"),
-        State("transporte-input", "value"),
-        State("volumes-input", "value"),
-        State("motivo-input", "value"),
-        State("data-input", "value"),
+        State('cliente-input', 'value'),
+        State('transporte-input', 'value'),
+        State('Prenota-input', 'value'),
+        State('volumes-input', 'value'),
+        State('motivo-input', 'value'),
+        State('data-input', 'value'),
+        State('client-table', 'data'),
     ],
+    prevent_initial_call=True  # Adiciona prevent_initial_call aqui
 )
-def update_client_df(n_clicks, cliente, transporte, volumes, motivo, data,):
-    if n_clicks > 0 and all([cliente, transporte, volumes, motivo, data]):
-        global client_df
-        new_data = {'Cliente': [cliente], 'Transporte': [transporte], 'Volumes': [volumes], 'Motivo': [motivo], 'Data': [data]}
-        client_df = pd.concat([client_df, pd.DataFrame(new_data)], ignore_index=True)
+def adicionar_remessa(n_clicks, cliente, transporte, Pre_nota, volumes, motivo, data, rows):
+    if n_clicks > 0:
+        nova_linha = {'Cliente': cliente, 'Transporte': transporte, 'Pre_nota': Pre_nota, 'Volumes': volumes, 'Motivo': motivo, 'Data': data}
+        rows.append(nova_linha)
+        insert_data_into_database(cliente, transporte, Pre_nota, volumes, motivo, data)
+    return rows
 
-        insert_data_into_database(cliente, transporte, volumes, motivo, data)
 
-    raise PreventUpdate
+@app.callback(
+    Output('client-table', 'data', allow_duplicate=True),
+    Input('client-table', 'active_cell'),
+    State('client-table', 'data'),
+    prevent_initial_call=True
+
+)
+def deletar_linha(active_cell, rows):
+    if active_cell and active_cell['column_id'] == 'delete-button':
+        row_id = active_cell['row']
+        linha = rows.pop(row_id)
+        delete_data_from_database(linha['Cliente'], linha['Transporte'], linha['Pre_nota'], linha['Volumes'], linha['Motivo'], linha['Data'])
+    return rows
+
+@app.callback(
+    Output('client-table', 'data', allow_duplicate=True),
+    [Input('save-changes-button', 'n_clicks')],
+    [State('client-table', 'data')],
+    prevent_initial_call=True
+
+)
+def salvar_alteracoes(n_clicks, rows):
+    if n_clicks > 0:
+        mydb = mysql.connector.connect(
+            host='db_sabertrimed.mysql.dbaas.com.br',
+            user='db_sabertrimed',
+            password='s@BRtR1m3d',
+            database='db_sabertrimed',
+        )
+        cursor = mydb.cursor()
+
+        for row in rows:
+            query = """
+            UPDATE devolucao
+            SET em_transito = %s, chegou = %s, dia_chegou = %s, conferida = %s, finalizado = %s
+            WHERE Cliente = %s AND Transporte = %s AND Pre_nota = %s AND Volumes = %s AND Motivo = %s AND Data = %s
+            """
+            values = (row['em_transito'], row['chegou'], row['dia_chegou'], row['conferida'], row['finalizado'], row['Cliente'], row['Transporte'], row['Pre_nota'], row['Volumes'], row['Motivo'], row['Data'])
+            cursor.execute(query, values)
+
+        mydb.commit()
+        cursor.close()
+        mydb.close()
+
+    return rows
+
+@app.callback(
+    Output('client-table', 'data', allow_duplicate=True),
+    [Input({'type': 'delete-button', 'index': dash.dependencies.ALL}, 'n_clicks')],
+    [State('client-table', 'data')],
+    prevent_initial_call=True
+)
+def delete_row(delete_buttons, table_data):
+    ctx = dash.callback_context
+
+    if not ctx.triggered:
+        raise PreventUpdate
+
+    triggered = ctx.triggered[0]
+    if 'delete-button' in triggered['prop_id']:
+        delete_index = json.loads(triggered['prop_id'].split('.')[0])['index']
+        row_to_delete = table_data[delete_index]
+
+        delete_data_from_database(
+            row_to_delete['Cliente'],
+            row_to_delete['Transporte'],
+            row_to_delete['Transporte'],
+            row_to_delete['Pre_nota'],
+            row_to_delete['Volumes'],
+            row_to_delete['Motivo'],
+            row_to_delete['Data']
+        )
+
+        del table_data[delete_index]
+
+    return table_data
+
+
+
 
 @app.callback(
     Output('client-table', 'data'),
@@ -253,63 +432,24 @@ def update_client_df(n_clicks, cliente, transporte, volumes, motivo, data,):
         Input('filter-cliente', 'value'),
         Input('filter-em_transito', 'value'),
         Input('filter-chegou', 'value'),
-        Input('filter-finalizado', 'value')
+        Input('filter-finalizado', 'value'),
     ]
 )
-def filter_table_data(cliente_filter, em_transito_filter, chegou_filter, finalizado_filter):
-    # Realiza uma nova consulta ao banco de dados
+def filtrar_dados(cliente, em_transito, chegou, finalizado):
+    # Carregar os dados da tabela de remessa
     client_df = carregar_dados_remessa()
 
-    if cliente_filter:
-        client_df = client_df[client_df['Cliente'] == cliente_filter]
-
-    if em_transito_filter:
-        client_df = client_df[client_df['em_transito'] == em_transito_filter]
-
-    if chegou_filter:
-        client_df = client_df[client_df['chegou'] == chegou_filter]
-
-    if finalizado_filter:
-        client_df = client_df[client_df['finalizado'] == finalizado_filter]
+    # Aplicar os filtros conforme os valores selecionados
+    if cliente:
+        client_df = client_df[client_df['Cliente'] == cliente]
+    if em_transito:
+        client_df = client_df[client_df['em_transito'] == em_transito]
+    if chegou:
+        client_df = client_df[client_df['chegou'] == chegou]
+    if finalizado:
+        client_df = client_df[client_df['finalizado'] == finalizado]
 
     return client_df.to_dict('records')
 
-def update_data_in_database(cliente, em_transito, chegou, finalizado, dia_chegou):
-    mydb = mysql.connector.connect(
-        host='db_sabertrimed.mysql.dbaas.com.br',
-        user='db_sabertrimed',
-        password='s@BRtR1m3d',
-        database='db_sabertrimed',
-    )
 
-    cursor = mydb.cursor()
-
-    query = "UPDATE devolucao SET em_transito = %s, chegou = %s, finalizado = %s, dia_chegou = %s WHERE Cliente = %s"
-    values = (em_transito, chegou, finalizado, dia_chegou, cliente,)
-
-    cursor.execute(query, values)
-
-    mydb.commit()
-    mydb.close()
-    mydb.close()
-
-@app.callback(
-    Output("save-changes-button", "n_clicks"),
-    [Input("save-changes-button", "n_clicks")],
-    [State("client-table", "data")],
-)
-def save_table_changes(n_clicks, table_data):
-    if n_clicks is not None and n_clicks > 0:
-        # Atualize o banco de dados com os dados alterados na tabela
-        for row in table_data:
-            cliente = row["Cliente"]
-            em_transito = row.get("em_transito", "Não")  # Se a coluna estiver vazia, defina como "Não"
-            chegou = row.get("chegou", "Não")
-            finalizado = row.get("finalizado", "Não")
-            dia_chegou = row.get("dia_chegou", None)  # Obtém a nova data de chegada
-
-            # Atualize os valores no banco de dados
-            update_data_in_database(cliente, em_transito, chegou, finalizado, dia_chegou)
-
-    return n_clicks or 0  #
 
