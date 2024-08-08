@@ -49,12 +49,12 @@ sidebar = html.Div(
             ),
                 dbc.NavLink(
                     [
-                        html.I(className="fa-solid fa-arrow-down-wide-short fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
-                        html.Span("Sequencial Arquivos",className="sidebar-info"),
+                        html.I(className="fa-solid fa-map-location-dot fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span("Agendamentos",className="sidebar-info"),
                     ],
-                    href="/sequencialarquivos",
+                    href="/agendamentos",
                     active="exact",
-                    className="nav-link-beat"
+                    className="nav-link-beat"#<i class="fa-solid fa-map-location-dot"></i>
                 ),    
                 dbc.NavLink(
                     [
@@ -174,7 +174,7 @@ devolucao_layout = devolucao.layout()
 santander_layout = santander.layout()
 trocados_layout = trocados.layout()
 sofisa_layout = sofisa.layout()
-sequencialarquivos_layout= agendamentos.layout()
+agendamentos_layout= agendamentos.layout()
 safra_layout = safra.layout()
 avisos_layout = avisos.layout()
 itau_layout = itau.layout()
@@ -182,7 +182,7 @@ sicoob_layout = sicoob.layout()
 
 bemvindo_layout = bemvindo.layout(username=username) 
 
-app.layout = html.Div([
+app.layout = html.Div([ 
     sidebar,
     html.Div([
         dcc.Location(id="url", refresh=True),
@@ -288,7 +288,7 @@ def display_page(pathname):
             return sofisa.layout()
         elif pathname == "/itau":
             return itau.layout()        
-        elif pathname == "/sequencialarquivos":
+        elif pathname == "/agendamentos":
             return agendamentos.layout()        
         elif pathname == "/rastrear":
             return rastrear.layout()

@@ -322,6 +322,12 @@ html {
     margin-right: -150px; /* Ajusta a margem entre as animações */
     margin-top: 250px;
 }
+.animation3 {
+    width: 350px;
+    height: 350px;
+    margin-right: -50px; /* Ajusta a margem entre as animações */
+    margin-top: 200px;
+}
 
 .animation2{
     width: 400px;
@@ -504,4 +510,14 @@ font-family: 'Poppins', sans-serif;
 
 }
 
-
+.text-devolucao4 {
+    /* margin-bottom: 20px; */
+    margin-top: 30px;
+    font-size: 18px;
+    font-family:'Poppins', sans-serif; 
+    color:#646464;
+    text-align: center;
+    display: center;
+    align-items: center;    
+    /* margin-bottom: 20px; */
+}

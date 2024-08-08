@@ -55,7 +55,7 @@ def carregar_dados_remessa():
 
         df_ordenado['Vencimento'] = pd.to_datetime(df_ordenado['Vencimento'], format='%Y-%m-%d')
 
-        data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=30)
+        data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=1000)
         df_ordenado = df_ordenado.loc[df_ordenado['Vencimento'] >= data_hoje_menos_5_dias]
 
         df_ordenado = df_ordenado.sort_values(by='Vencimento')
