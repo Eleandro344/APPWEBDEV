@@ -44,7 +44,11 @@ def carregar_dados_remessa():
 
         # Remover a coluna temporária de ordem de status
         client_df = client_df.drop(columns=['status_order'])
-
+        # df_vazio = entregashoje['volumes'].astype(int)
+        # if df_vazio.empty:
+        #     entregashoje = "Não entregas Agendadas para hoje!"
+        # else:
+        #     return entregashoje
 
         # client_df = client_df.loc[client_df['entrega'] == ]
 
