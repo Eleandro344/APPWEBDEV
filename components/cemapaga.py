@@ -55,13 +55,14 @@ def carregar_dados_remessa():
 
         df_ordenado['Vencimento'] = pd.to_datetime(df_ordenado['Vencimento'], format='%Y-%m-%d')
 
-        data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=1000)
+        data_hoje_menos_5_dias = pd.Timestamp.today().normalize() - timedelta(days=30)
         df_ordenado = df_ordenado.loc[df_ordenado['Vencimento'] >= data_hoje_menos_5_dias]
 
         df_ordenado = df_ordenado.sort_values(by='Vencimento')
         df_ordenado = df_ordenado.drop(columns=['Ocorrencia'])
         df_ordenado = df_ordenado.drop(columns=['Data da Ocorrencia','CNPJ'])
         # df_ordenado = df_ordenado.loc[df_ordenado['Ordem'] == 'Cema Paga']
+        df_ordenado['Vencimento'] = pd.to_datetime(df_ordenado['Vencimento']).dt.strftime('%d/%m/%Y')
 
         return df_ordenado
     except mysql.connector.Error as e:
@@ -91,6 +92,19 @@ def layout():
                 width=8,  # Ajuste a largura da coluna para mover o componente para a direita
             ),
         ]),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dcc.Dropdown(
+                                id="filter-Ordem",
+                                options=[
+                                    {"label": Ordem, "value": Ordem} for Ordem in df_ordenado["Ordem"].unique()
+                                ],
+                                placeholder="Filtrar por Pagar",
+                                multi=True, # Permitir múltiplas seleções
+                            ),
+                            )]),
+                          
         dbc.Row([
             dbc.Col(
                 dash_table.DataTable(
@@ -98,9 +112,16 @@ def layout():
                     data=df_ordenado.to_dict('records'),
                     columns=[{'name': col, 'id': col, 'editable': True if col == 'OBS' else False} for col in df_ordenado.columns],
                     # page_size=10,  # Defina o número de linhas por página
-                    style_table={'overflowX': 'auto', 'width': '150%', 'margin-top': '30px', 'margin-left': '-24%', 'margin-right': 'auto', 'z-index': '0', 'border': 'none'},
-                    style_header={'backgroundColor': 'rgb(230, 230, 230)', 'fontWeight': 'bold', 'color': 'Black', 'fontFamily': 'Arial'},
-                    style_cell={'textAlign': 'left', 'fontSize': '15px', 'minWidth': '100px', 'fontFamily': 'Arial'},  # Estilo das células
+                    style_table={ 'width': '100%', 'margin-top': '30px', 'margin-left': '-20%', 'border': 'none', 'border-radius': '10px', 'box-shadow': '0 4px 8px rgba(0, 0, 0, 0.1)'},
+                    style_header={'backgroundColor': 'rgb(230, 230, 230)', 'color': '#0e0e0d','font-size ':'12px' ,'fontFamily': 'Poppins, Arial', 'borderBottom': '1px solid #00aaff'},
+                    style_cell= {                                   
+                    'textAlign': 'left',
+                    'fontFamily': 'Poppins, Arial',
+                    'font-size': '14px',  # Reduza o tamanho da fonte
+                    'minWidth': '180px',   # Reduza a largura mínima
+                    'maxWidth': '200px',  # Defina a largura m  áxima
+                    'padding': '5p',
+                    'whiteSpace': 'normal' }  ,# Estilo das células
                     style_data_conditional=[
                         {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248, 248, 248)'},
                         {'if': {'column_id': 'Ordem'}, 'backgroundColor': 'red', 'color': 'white'},
@@ -150,3 +171,22 @@ def salvar_observacoes(n_clicks, data):
         return data
     except mysql.connector.Error as e:
         return dash.no_update
+    
+@app.callback(
+    Output('data-table', 'data', allow_duplicate=True),
+    [Input('filter-Ordem', 'value')],
+    prevent_initial_call=True
+)
+def filtrar_dados(Ordem):
+    # Carregar os dados da tabela de remessa
+    df_ordenado = carregar_dados_remessa()
+
+    # Verifica se o DataFrame está vazio
+    if df_ordenado is None or df_ordenado.empty:
+        return dash.no_update
+
+    # Aplicar o filtro conforme o valor selecionado
+    if Ordem:
+        df_ordenado = df_ordenado[df_ordenado['Ordem'].isin(Ordem)]
+
+    return df_ordenado.to_dict('records')
