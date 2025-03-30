@@ -8,7 +8,10 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from app import app  # Importa o objeto app do arquivo app.py
 
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 import pandas as pd
 import mysql.connector
 
@@ -17,10 +20,10 @@ def carregar_dados_remessa():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',  
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
         )
 
         # Consulta SQL apenas para as colunas desejadas
@@ -70,15 +73,15 @@ def carregar_dados_retorno():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',  
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
         )
         consulta_retorno = """
     SELECT 
         `Data de Geração do Arquivo header`,
-        Ocorrencia,
+        `Ocorrencia`,
         `CODIGO DO DOC`,
         Carteira,
         `Valor do Título`,

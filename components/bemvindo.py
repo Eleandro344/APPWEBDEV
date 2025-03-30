@@ -27,12 +27,13 @@ def layout(username):
         ),
         html.I(className="fa fa-user", style={'position': 'absolute', 'top': '150px', 'right': '80px', 'font-size': '18px', 'color': '#222222', 'font-weight': 'bold'}),
         html.H1(f"Olá, {username}", className="text-user"),
-      html.Div([
-            html.Iframe(className='animation3',
-                         src="https://lottie.host/embed/b01441fb-cb2b-422c-8680-ed0bea65e78a/oY9MNpdtmd.json"),
+        html.H1(f"Grafeno disponivel!", className="text-mensage"),
 
-        # html.Div([
-        #     html.Iframe(className='animation1',
+        html.Div([
+            html.Iframe(className='animation3',
+                         src="https://lottie.host/embed/4a38ddaf-5b65-4a65-b537-a7be7ce54a49/x7ymJTtuXu.json"),
+        # html.Div([<iframe src="https://lottie.host/embed/45af3a4c-75e6-42ba-b74b-c9a98e1639a3/r2rPa6bgO4.json"></iframe>
+        #     html.Ifr<iframe src="https://lottie.host/embed/45af3a4c-75e6-42ba-b74b-c9a98e1639a3/r2rPa6bgO4.jsoname(className='animation1',
         #                 src="https://lottie.host/embed/ed87547d-213b-4beb-81b1-084c75e27473/Hj9y7DHwau.json"),
         #     html.Iframe(className='animation2',
         #                 src="https://lottie.host/embed/4f864203-b546-48b6-97e6-e98a8b74d293/RytEztFHFm.json")

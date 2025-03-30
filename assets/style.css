@@ -323,10 +323,10 @@ html {
     margin-top: 250px;
 }
 .animation3 {
-    width: 350px;
-    height: 350px;
-    margin-right: -50px; /* Ajusta a margem entre as animações */
-    margin-top: 200px;
+    width: 500px;
+    height: 500px;
+    margin-right: 0px; /* Ajusta a margem entre as animações */
+    margin-top: 80px;
 }
 
 .animation2{
@@ -520,4 +520,28 @@ font-family: 'Poppins', sans-serif;
     display: center;
     align-items: center;    
     /* margin-bottom: 20px; */
+}
+.text-mensage {
+    margin-top: -250px;
+    color: rgb(204, 8, 8);
+    padding: 15px;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    position: absolute; /* Usar 'absolute' para facilitar a centralização */
+    top: 50%;  /* Centraliza verticalmente */
+    left: 40%; /* Centraliza horizontalmente */
+    
+}
+
+/* Define a animação de pulsação */
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.1); /* Aumenta o tamanho */
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
 }

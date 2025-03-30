@@ -9,83 +9,44 @@ from dash.exceptions import PreventUpdate
 from app import app  # Importa o objeto app do arquivo app.py
 from dash import dcc, html
 
-
-import pandas as pd
+from dotenv import load_dotenv
+import os
 import mysql.connector
+
+load_dotenv()
+import pandas as pd
 
 # Função para carregar os dados da tabela de remessa
 def carregar_dados_remessa():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',  
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
+
         )
-        consulta_remessa = "SELECT * FROM unicredremessa"
+        consulta_remessa = """
+    SELECT 
+            `Data da Gravação do Arquivo`,    
+            `Identificação da Ocorrência`,
+            `CODIGO DO DOC`,    
+            `Data de emissão do Título`,    
+            `Data de vencimento do Título`,    
+            `Valor do Título`,    
+            `Nome/Razão Social do Pagador`,  
+            `Data Limite P/Concessão de Desconto`,
+            `Valor do Desconto`,
+            `Nº Sequencial do Registro remessa`, 
+
+            `Nº Sequencial do Arquivo`,
+            `Nº Sequencial do Registro`
+          FROM unicredremessa
+                """
         remessaunicred_bd = pd.read_sql(consulta_remessa, con=mydb)
         mydb.close()
 
-        new_order = [
-            'Data da Gravação do Arquivo',    
-            'Identificação da Ocorrência',
-            'CODIGO DO DOC',    
-            'Data de emissão do Título',    
-            'Data de vencimento do Título',    
-            'Valor do Título',    
-            'Nome/Razão Social do Pagador',  
-            'Data Limite P/Concessão de Desconto',
-            'Valor do Desconto',
-            'Nº Sequencial do Registro remessa', 
-            'Código do desconto',       
-            'Identificação do Registro remessa',
-            'Agência do BENEFICIÁRIO na UNICRED',
-            'Dígito da Agência',
-            'Conta Corrente',
-            'Dígito da Conta Corrente',
-            'Zero',
-            'Código da Carteira',
-            'zeros',
-            'Nº Controle do Participante (Uso da empresa)',
-            'Código do Banco na Câmara de Compensação',
-            'zeross',
-            'Brancoss',
-            'Filler',
-            'Código da Multa',
-            'Valor/Percentual da Multa',
-            'Tipo de Valor Mora',
-            'Identificação de Título Descontável',
-            'Brancossss',
-            'Código para Protesto/Negativação',
-            'Número de Dias para Protesto/Negativação',
-            'Valor de Mora',
-            'Nosso Número na UNICRED',
-            'Valor do Abatimento a ser concedido',
-            'Identificação do Tipo de Inscrição do Pagador',
-            'Nº Inscrição do Pagador',
-            'Endereço do Pagador',
-            'Bairro do Pagador',
-            'CEP do Pagador',
-            'Cidade do Pagador',
-            'UF do Pagador',
-            'Pagador/Avalista',
-            'Identificação do Registro',
-            'Identificação do Arquivo Remessa',
-            'Literal Remessa',
-            'Código de Serviço',
-            'Literal Serviço',
-            'Código do Beneficiário',
-            'Nome da Empresa BENEFICIÁRIO',
-            'Número da UNICRED na Câmara de Compensação',
-            'Nome do Banco por Extenso',
-            'Código da Variação carteira da UNICRED',
-            'Nº Sequencial do Arquivo',
-            'Nº Sequencial do Registro',
-            'Identificação do Registro treiler'
-        ]
-
-        remessaunicred_bd = remessaunicred_bd[new_order]
         remessaunicred_bd = remessaunicred_bd.sort_values(by='Data da Gravação do Arquivo', ascending=True)
 
         novos_nomes = {
@@ -108,73 +69,44 @@ def carregar_dados_retorno():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',  
-            database='db_sabertrimed',
+            host=os.getenv('DB_HOST'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD'),
+            database=os.getenv('DB_NAME'),
         )
-        consulta_retorno = "SELECT * FROM retornounicred"
-        retornounicred_bd = pd.read_sql(consulta_retorno, con=mydb)
+        consulta_remessa = """
+        SELECT 
+            `DATA DA GERAÇÃO DO ARQUIVO`,   
+            `TIPO DE INSTRUÇÃO ORIGEM`,
+            `CÓDIGO DE MOVIMENTO`,
+            `CODIGO DO DOC`,
+            `COMPLEMENTO DO MOVIMENTO`,
+            `DATA LIQUIDAÇÃO`,
+            `CANAL DE LIQUIDAÇÃO`,
+            `VALOR DO TÍTULO`,
+            `VALOR ABATIMENTO`,
+            `VALOR PAGO`,
+            `JUROS DE MORA`,
+            `VALOR LÍQUIDO`,
+            `DATA DE VENCIMENTO`,
+            `DATA PROGRAMADA PARA REPASSE`,
+            `VALOR DA TARIFA`,
+            `DATA DE DEBITO DA TARIFA`,
+            `VALOR DESCONTO CONCEDIDO`,
+            `SEQUENCIAL DO REGISTRO`,
+            `NOME DO BENEFICIÁRIO`,
+            `SEQUENCIAL DO RETORNO`
+          FROM retornounicred
+                """
+        retornounicred_bd = pd.read_sql(consulta_remessa, con=mydb)
         mydb.close()
+
         retornounicred_bd['DATA DA GERAÇÃO DO ARQUIVO'] = pd.to_datetime(retornounicred_bd['DATA DA GERAÇÃO DO ARQUIVO'])
 
         # Ordenar o DataFrame pela coluna 'Data da Ocorrência' de forma crescente
         #df_retorno = df_retorno.sort_values(by='DATA DA GERAÇÃO DO ARQUIVO')
         retornounicred_bd = retornounicred_bd.sort_values(by=['DATA DA GERAÇÃO DO ARQUIVO', 'SEQUENCIAL DO REGISTRO'], ascending=[True, True])
             
-
-        new_order = [
-            'DATA DA GERAÇÃO DO ARQUIVO',   
-            'TIPO DE INSTRUÇÃO ORIGEM',
-            'CÓDIGO DE MOVIMENTO',
-            'CODIGO DO DOC',
-            'COMPLEMENTO DO MOVIMENTO',
-            'DATA LIQUIDAÇÃO',
-            'CANAL DE LIQUIDAÇÃO',
-            'VALOR DO TÍTULO',
-            'VALOR ABATIMENTO',
-            'VALOR PAGO',
-            'JUROS DE MORA',
-            'VALOR LÍQUIDO',
-            'TIPO DE INSCRIÇÃO DA EMPRESA',
-            'NÚMERO DE INSCRIÇÃO DA EMPRESA',
-            'NÚMERO DA AGÊNCIA',
-            'DÍGITO VERIFICADOR DA AGÊNCIA',
-            'CONTA CORRENTE DO BENEFICIÁRIO',
-            'DÍGITO VERIFICADOR DA CONTA DO BENEFICIÁRIO',
-            'CÓDIGO DO BENEFICIÁRIO',
-            'NOSSO NÚMERO',
-            'FIXO',
-            'FIXO2',
-            'FIXO3',
-            'DATA DE VENCIMENTO',
-            'CÓDIGO DO BANCO RECEBEDOR',
-            'PREFIXO DA AGÊNCIA RECEBEDORA',
-            'DV-PREFIXO AGÊNCIA RECEBEDORA',
-            'DATA PROGRAMADA PARA REPASSE',
-            'VALOR DA TARIFA',
-            'DATA DE DEBITO DA TARIFA',
-            'VALOR DESCONTO CONCEDIDO',
-            'SEQUENCIAL DO REGISTRO',
-            'FIXO cabecario',
-            'FIXO2 cabecario',
-            'FIXO3 cabecario',
-            'FIXO4',
-            'FIXO5',
-            'NÚMERO DA AGÊNCIA CABECARIO',
-            'DÍGITO VERIFICADOR DA AGÊNCIA CABECARIO',
-            'CONTA CORRENTE DO BENEFICIÁRIO CABECARIO',
-            'DÍGITO VERIFICADOR DA CONTA DO BENEFICIÁRIO CABECARIO',
-            'NOME DO BENEFICIÁRIO',
-            'FIXO6',
-            'SEQUENCIAL DO RETORNO',
-            'CÓDIGO DO BENEFICIÁRIO CABECARIO',
-            'FIXO7',
-            'Identificação do Registro treiler',
-            'Nome do arquivo',
-        ]
-        retornounicred_bd = retornounicred_bd[new_order]
-
         novos_nomes = {
             'DATA DA GERAÇÃO DO ARQUIVO': 'Data da Ocorrencia',
             'CÓDIGO DE MOVIMENTO': 'Ocorrencia',
@@ -224,7 +156,7 @@ def create_data_table(id, data):
             {'if': {'row_index': 'odd'}, 'backgroundColor': 'rgb(248, 248, 248)'},
             {'if': {'column_id': 'Ocorrencia'}, 'backgroundColor': '#006400', 'color': 'white'},
             {'if': {'column_id': 'TIPO DE INSTRUÇÃO ORIGEM'}, 'backgroundColor': '#A52A2A', 'color': 'white'},
-            {'if': {'column_id': 'CÓDIGO DE MOVIMENTO'}, 'backgroundColor': '#006400', 'color': 'white'},
+            {'if': {'column_id': 'CÓDIGO DE MOVIMENTO'}, 'b ackgroundColor': '#006400', 'color': 'white'},
         ],
     )
 

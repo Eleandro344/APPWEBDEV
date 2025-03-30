@@ -11,14 +11,17 @@ from app import app  # Importa o objeto app do arquivo app.py
 
 import pandas as pd
 import mysql.connector
-
+from dotenv import load_dotenv
+import os
+    
+load_dotenv() 
 def carregar_dados_remessa():
     try:
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',  
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME')
         )
         consulta_remessa = "SELECT * FROM basestratton"
         remessasafra_bd = pd.read_sql(consulta_remessa, con=mydb)

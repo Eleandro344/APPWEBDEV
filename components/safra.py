@@ -7,7 +7,10 @@ import mysql.connector
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from app import app  # Importa o objeto app do arquivo app.py
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
 import pandas as pd
 import mysql.connector
@@ -17,78 +20,40 @@ def carregar_dados_remessa():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',  
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
         )
-        consulta_remessa = "SELECT * FROM remessa_safra"
+        consulta_remessa = """
+    SELECT 
+        `Data da Gravação do Arquivo`,
+        `Cod. Ocorrência`,
+        `CODIGO DO DOC`,
+        `Valor Do Título`, 
+        `Vencimento`,
+        `Cod. Carteira`,
+        `Nome Do Pagador`, 
+        `Data De Emissão Do Título`,
+        `Valor Do Desconto Concedido`,
+        `dias protesto`, 
+        `Primeira Instrução De Cobrança`,
+        `Segunda Instrução De Cobrança`, 
+        `Juros 1 Dia`,
+        `Data Limite Para Desconto`, 
+        `Valor lof`, 
+        `Número Sequenc. De Registro De Arquivo`,
+        `Nº Sequencial do Arquivo`, 
+        `Nº Sequencial do Registro`,
+        `Número sequencial de registro no arquivo trailer`
+          FROM remessa_safra
+                """
         remessasafra_bd = pd.read_sql(consulta_remessa, con=mydb)
         mydb.close()
-        
-        new_order = [
-        'Data da Gravação do Arquivo',
-        'Cod. Ocorrência',
-        'CODIGO DO DOC',
-        'Valor Do Título', 
-        'Vencimento',
-        'Cod. Carteira',
-        'Nome Do Pagador', 
-        'Data De Emissão Do Título',
-        'Valor Do Desconto Concedido',
-        'dias protesto', 
-        'cod. inscrição', 
-        'Numero da Inscrição',
-        'Cod. Empresa',
-        'Nosso Número',
-        'Código lof',
-
-
-
-
-        'Bco. Deposit.', 
-        'Ag. Depositária',
-        'Cod. Aceite',
-        'Primeira Instrução De Cobrança',
-        'Segunda Instrução De Cobrança', 
-        'Juros 1 Dia', 'Data Limite Para Desconto', 
-        'Valor lof', 
-        'Abatimento /Multa', 
-        'Número de Inscrição do Pagador', 
-        'Endereço Do Pagador',
-        'Bairro Do Pagador',
-        'Código De Endereçamento Postal Do Pagador',
-        'Cidade Do Pagador',
-        'Estado Do Pagador',
-        'Nome do Sacador Avalista',
-        'Banco Emitente do Boleto',
-        'Numero Sequencial do Arquivo Remessa',
-        'Número Sequenc. De Registro De Arquivo',
-        'Nome do arquivo', 
-        'Código do Registro header',
-        'Código da Remessa',
-        'Literal Remessa',
-        'Código de Serviço', 
-        'Literal Serviço', 
-        'Código de Transmissão',
-        'Nome da Empresa BENEFICIÁRIO',
-        'Código do Banco',
-        'Nome do Banco', 
-        'Código do Registro',
-        'Nº Sequencial do Arquivo', 
-        'Nº Sequencial do Registro',
-        'Código do Registro trailer',
-        'Quantidade de registro no arquivo',
-        'Valor Total dos boletos',
-        'Número sequencial de registro no arquivo trailer'
-        ]
-
         # Reordena as colunas do DataFrame
-        remessasafra_bd = remessasafra_bd[new_order]
 
 
 
-        remessasafra_bd = remessasafra_bd[new_order]
         remessasafra_bd = remessasafra_bd.sort_values(by='Data da Gravação do Arquivo', ascending=True)
 
         novos_nomes = {
@@ -114,10 +79,10 @@ def carregar_dados_retorno():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',  
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
         )
         consulta_retorno = "SELECT * FROM retorno_safra"
         safraretorno_db = pd.read_sql(consulta_retorno, con=mydb)

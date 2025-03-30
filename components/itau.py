@@ -8,7 +8,10 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from app import app  # Importa o objeto app do arquivo app.py
 from dash import dcc, html
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 import time
 import pandas as pd
 import mysql.connector
@@ -18,10 +21,10 @@ def carregar_dados_remessa():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',  
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
         )
         consulta_remessa = """
     SELECT 
@@ -29,9 +32,11 @@ def carregar_dados_remessa():
         `CÓD. DE OCORRÊNCIA`,
         `CODIGO DO DOC`,
         `DATA DE EMISSÃO`,
-        VENCIMENTO,
-        NOME,
+        `VENCIMENTO`,
+        `NOME`,
         `DESCONTO ATÉ`,
+        `INSTRUÇÃO 1`,
+        `INSTRUÇÃO 2`,
         `VALOR DO DESCONTO`,
         `VALOR DO IOF`,
         `VALOR DO TÍTULO`
@@ -50,7 +55,8 @@ def carregar_dados_remessa():
         remessaunicred_bd['Data da Ocorrencia'] = pd.to_datetime(remessaunicred_bd['Data da Ocorrencia'])
 
         remessaunicred_bd = remessaunicred_bd.sort_values(by=['Data da Ocorrencia'], ascending=[True])
-
+        remessaunicred_bd.loc[remessaunicred_bd['INSTRUÇÃO 1'] == 0, 'INSTRUÇÃO 1'] = "Não protestar"
+        remessaunicred_bd.loc[remessaunicred_bd['INSTRUÇÃO 1'] != 'Não protestar', 'INSTRUÇÃO 1'] = "Protesto automatico"
    
         remessaunicred_bd.loc[remessaunicred_bd['Ocorrencia'] == 'REMESSA DE TÍTULOS', 'Ocorrencia'] = "ENVIADO"
 
@@ -69,83 +75,35 @@ def carregar_dados_retorno():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',  
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
         )
-        consulta_retorno = "SELECT * FROM retorno_itau"
-        retornounicred_bd = pd.read_sql(consulta_retorno, con=mydb)
+        consulta_remessa = """
+    SELECT 
+            `DATA DE GERAÇÃO HEADER`,
+            `CÓD. DE OCORRÊNCIA`, 
+            `CODIGO DO DOC`, 
+            `VALOR DO TÍTULO`,
+            `JUROS DE MORA/MULTA`,
+            `VALOR PRINCIPAL`,
+            `VALOR DO IOF`,
+            `VENCIMENTO`, 
+            `DESCONTOS`, 
+            `ERROS`,
+            `CÓD. DE LIQUIDAÇÃO`, 
+            `NÚMERO SEQUENCIAL`,
+            `NOME DO BANCO HEADER`,
+            `DATA DE GERAÇÃO HEADER`,
+            `NUMERO SEQUENCIAL HEADER`, 
+            `NÚMERO SEQUENCIAL TRAILER`
+    FROM retorno_itau
+"""
+        retornounicred_bd = pd.read_sql(consulta_remessa, con=mydb)
         mydb.close()
-        new_column_order = [
-            'DATA DE GERAÇÃO HEADER', 
-            'CÓD. DE OCORRÊNCIA', 
-            'CODIGO DO DOC', 
-            'VALOR DO TÍTULO',
-            'VALOR DO IOF',
-            'VENCIMENTO', 
-            'DESCONTOS', 
-            'ERROS', 
-
-
-
-
-
-            'Código do Registro',
-            'CÓDIGO DE INSCRIÇÃO',
-            'Nº de inscrição do beneficiário',
-            'Código da agência beneficiário',
-            'Conta movimento beneficiário', 
-            'DAC',
-            'USO DA EMPRESA',
-            'NOSSO NÚMERO', 
-            'CARTEIRA', 
-            'DAC NOSSO NÚMERO',
-            'NOSSO NÚMERO 2',
-            'CÓDIGO DO BANCO', 
-            'AGÊNCIA COBRADORA', 
-            'DAC AG. COBRADORA', 
-            'TARIFA DE COBRANÇA',
-            'VALOR ABATIMENTO',
-            'VALOR PRINCIPAL',
-            'JUROS DE MORA/MULTA',
-            'OUTROS CRÉDITOS',
-            'BOLETO DDA',
-            'DATA CRÉDITO',
-            'INSTR.CANCELADA', 
-            'NOME',
-            'CÓD. DE LIQUIDAÇÃO', 
-            'NÚMERO SEQUENCIAL',
-            'Nome do arquivo',
-            'TIPO DE REGISTRO HEADER',
-            'CÓDIGO DE RETORNO', 
-            'LITERAL DE RETORNO HEADER',
-            'LITERAL DE SERVIÇO HEADER',
-            'AGÊNCIA HEADER', 
-            'CONTA HEADER', 
-            'DAC HEADER',
-            'NOME DA EMPRESA HEADER',
-            'CODIGO DO BANCO HEADER',
-            'NOME DO BANCO HEADER',
-            'DATA DE GERAÇÃO HEADER',
-            'NUMERO SEQUENCIAL HEADER', 
-            'DENSIDADE', 'UNIDADE DE DENSID',
-            'Nº SEQ. ARQUIVO RET', 
-            'TIPO DE REGISTRO TRAILER',
-            'CÓDIGO DE RETORNO TRAILER', 
-            'CÓDIGO DE SERVIÇO TRAILER',
-            'CÓDIGO DO BANCO TRAILER',
-            'QTDE. DE TÍTULOS TRAILER', 
-            'VALOR TOTAL TRAILER',
-            'AVISO BANCÁRIO TRAILER',
-            'CONTROLE DO ARQUIVO TRAILER',
-            'QTDE DE DETALHES TRAILER', 
-            'VLR TOTAL INFORMADO TRAILER', 
-            'NÚMERO SEQUENCIAL TRAILER'
-    ]
-
 # Reorder the columns
-        retornounicred_bd = retornounicred_bd[new_column_order]        
+        # retornounicred_bd = retornounicred_bd[new_column_order]        
         retornounicred_bd = retornounicred_bd.loc[:, ~retornounicred_bd.columns.duplicated()]
 
         # # Ordenar o DataFrame pela coluna 'Data da Ocorrência' de forma crescente
@@ -168,7 +126,7 @@ def carregar_dados_retorno():
 
        # retornounicred_bd = retornounicred_bd.sort_values(by=['Data da Ocorrencia', 'NÚMERO SEQUENCIAL'], ascending=[True, True])
         retornounicred_bd.loc[retornounicred_bd['Ocorrencia'] == 'BAIXA COM TRANSFERÊNCIA PARA D', 'Ocorrencia'] = "BAIXA COM TRANSFERÊNCIA PARA DESCONTO"
-       # retornounicred_bd.loc[retornounicred_bd['Ocorrencia'] == 'BAIXA COM TRANSFERÊNCIA PARA D', 'Ocorrencia'] = "DEVOLVIDO"
+        retornounicred_bd.loc[retornounicred_bd['Ocorrencia'] == 'BAIXA COM TRANSFERÊNCIA PARA DESCONTO', 'Ocorrencia'] = "TROCADO"
 
 
 

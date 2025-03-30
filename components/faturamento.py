@@ -17,17 +17,20 @@ import plotly.graph_objects as go
 import calendar
 import mysql.connector
 import plotly.express as px
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 from dash_table import DataTable
 
 def carregar_dados_remessa():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
         )
 
         # Consultas de remessas
@@ -37,6 +40,7 @@ def carregar_dados_remessa():
         remessa_sofisa = pd.read_sql("SELECT * FROM remessa_sofisa", con=mydb)
         remessa_itau = pd.read_sql("SELECT * FROM remessa_itau", con=mydb)
         remessa_sicoob = pd.read_sql("SELECT * FROM remessa_sicoob", con=mydb)
+        remessa_grafeno = pd.read_sql("SELECT * FROM remessa_grafeno", con=mydb)
 
         # Data de ontem
         hoje = datetime.now()
@@ -47,6 +51,7 @@ def carregar_dados_remessa():
         ontem = ontem.strftime('%Y-%m-%d')
 
         # Processamento das remessas
+# Processamento das remessas
         santander = remessa_santander[remessa_santander['Código de movimento remessa'] == 'Enviado']
         santander = santander[santander['Nº de inscrição do beneficiário'] != 0]
         santander['Valor nominal do boleto'] = santander['Valor nominal do boleto'].str.replace(',', '.').astype(float)
@@ -76,6 +81,17 @@ def carregar_dados_remessa():
         totalunicred = unicred['Valor do Título'].sum()
 
 
+        grafeno = remessa_grafeno[["Data de gravação do arquivo cabeçalho","Identificação da ocorrência", "Banco","Valor"]]
+        grafeno['Banco'] = grafeno['Banco'].astype(str)
+        grafeno.loc[:, 'Banco'] = 'GRAFENO'
+
+
+
+        grafeno = grafeno[remessa_grafeno['Identificação da ocorrência'] == 'Enviado']
+        grafeno['Valor'] = grafeno['Valor'].str.replace(',', '.').astype(float)
+        grafeno['Data de gravação do arquivo cabeçalho'] = pd.to_datetime(grafeno['Data de gravação do arquivo cabeçalho'], format='%d/%m/%y', errors='coerce')
+        grafeno = grafeno[grafeno['Data de gravação do arquivo cabeçalho'] == ontem]
+        grafenototal = grafeno['Valor'].sum()
 
 
 
@@ -94,6 +110,7 @@ def carregar_dados_remessa():
         total_sofisa = sofisa['Valor nominal do boleto'].sum()
 
         # Criação da tabela completa
+        grafeno = grafeno.rename(columns={'Data de gravação do arquivo cabeçalho': 'Emissao Doc', 'Valor': 'Valor', 'Identificação da ocorrência': 'Ocorrencia', 'Banco': 'Nome do Banco'})
         santander = santander.rename(columns={'Data de emissão do boleto': 'Emissao Doc', 'Valor nominal do boleto': 'Valor', 'Código de movimento remessa': 'Ocorrencia', 'Nome do Banco': 'Nome do Banco'})
         itauontem = itauontem.rename(columns={'DATA DE EMISSÃO': 'Emissao Doc', 'VALOR DO TÍTULO': 'Valor', 'CÓD. DE OCORRÊNCIA': 'Ocorrencia', 'NOME DO BANCO HEADER': 'Nome do Banco'})
         sicoobontem = sicoobontem.rename(columns={'Data Emissão do Título': 'Emissao Doc', 'Valor do Título': 'Valor', 'Ocorrencia': 'Ocorrencia', 'Nome do Banco': 'Nome do Banco'})
@@ -101,12 +118,12 @@ def carregar_dados_remessa():
         safra = safra.rename(columns={'Data De Emissão Do Título': 'Emissao Doc', 'Valor Do Título': 'Valor', 'Cod. Ocorrência': 'Ocorrencia', 'Nome do Banco': 'Nome do Banco'})
         sofisa = sofisa.rename(columns={'Data de emissão do boleto': 'Emissao Doc', 'Valor nominal do boleto': 'Valor', 'Código de movimento remessa': 'Ocorrencia', 'Nome do Banco': 'Nome do Banco'})
 
-        tabelacompleta = pd.concat([santander, itauontem, sicoobontem, unicred, safra, sofisa], ignore_index=True)
+        tabelacompleta = pd.concat([grafeno,santander, itauontem, sicoobontem, unicred, safra, sofisa], ignore_index=True)
         tabelacompleta['Quantidade de Titulos'] = 1
 
         total_por_banco = tabelacompleta.groupby(['Emissao Doc', 'Nome do Banco'])[['Quantidade de Titulos', 'Valor']].sum().reset_index()
         total_por_banco = total_por_banco.rename(columns={'Valor': 'Total'})
-    
+
         total_por_banco['Emissao Doc'] = pd.to_datetime(total_por_banco['Emissao Doc'])
         total_por_banco['Emissao Doc'] = total_por_banco['Emissao Doc'].dt.strftime('%d/%m/%Y')
         grafico = total_por_banco
@@ -120,7 +137,7 @@ def carregar_dados_remessa():
         else:
             exibicao = "sim"
 
-        return total_por_banco, exibicao,santandertotal, grafico,totalunicred, safratotal, total_sofisa, itautotal, sicoobtotal
+        return total_por_banco, exibicao,grafenototal,santandertotal, grafico,totalunicred, safratotal, total_sofisa, itautotal, sicoobtotal
 
     except mysql.connector.Error as e:
         print("Erro ao conectar-se ao banco de dados:", e)
@@ -129,7 +146,7 @@ def carregar_dados_remessa():
 
 
 def layout():
-    total_por_banco, exibicao, santandertotal, grafico, totalunicred, safratotal, total_sofisa, itautotal, sicoobtotal = carregar_dados_remessa()
+    total_por_banco, exibicao,grafenototal, santandertotal, grafico, totalunicred, safratotal, total_sofisa, itautotal, sicoobtotal = carregar_dados_remessa()
 
     if total_por_banco is None:
         return html.Div("Erro ao carregar dados da tabela de remessa.")
@@ -182,6 +199,7 @@ def layout():
                             html.Div(className='fa fa-university card-icon'),
                             color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px','transition': '300ms','overflow': 'hidden'}
                         ),
+                        
                     ], style={'width': '100%'})
                 ], width=2),
                 dbc.Col([
@@ -196,6 +214,18 @@ def layout():
                         ),
                     ], style={'width': '100%'})
                 ], width=2),
+                dbc.Col([
+                    dbc.CardGroup([
+                        dbc.Card([
+                            html.Legend('Grafeno'),
+                            html.H5(f'R$ {grafenototal:,.2f}'.replace(",", "X").replace(".", ",").replace("X", "."), id='card-title', style={}),
+                        ], className='card-quantidade-atendimentos card-style'),
+                        dbc.Card(
+                            html.Div(className='fa fa-university card-icon'),
+                            color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}
+                        ),
+                    ], style={'width': '100%'})
+                ], width=2),                
                 dbc.Col([
                     dbc.CardGroup([
                         dbc.Card([
@@ -220,18 +250,18 @@ def layout():
                         ),
                     ], style={'width': '100%'})
                 ], width=2),
-                dbc.Col([
-                    dbc.CardGroup([
-                        dbc.Card([
-                            html.Legend('Safra'),
-                            html.H5(f'R$ {safratotal:,.2f}'.replace(",", "X").replace(".", ",").replace("X", "."), id='card-title', style={}),
-                        ], className='card-quantidade-atendimentos card-style'),
-                        dbc.Card(
-                            html.Div(className='fa fa-university card-icon'),
-                            color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}
-                        ),
-                    ], style={'width': '100%'})
-                ], width=2),
+                # dbc.Col([
+                #     dbc.CardGroup([
+                #         dbc.Card([
+                #             html.Legend('Safra'),
+                #             html.H5(f'R$ {safratotal:,.2f}'.replace(",", "X").replace(".", ",").replace("X", "."), id='card-title', style={}),
+                #         ], className='card-quantidade-atendimentos card-style'),
+                #         dbc.Card(
+                #             html.Div(className='fa fa-university card-icon'),
+                #             color='success', style={'maxWidth': 75, 'height': 150, 'margin-left': '-10px'}
+                #         ),
+                #     ], style={'width': '100%'})
+                # ], width=2),
                 dbc.Col([
                     dbc.CardGroup([
                         dbc.Card([

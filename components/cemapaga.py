@@ -6,17 +6,20 @@ import pandas as pd
 import mysql.connector
 from datetime import datetime, timedelta
 import dash
-from app import app  # Importa o objeto app do arquivo app.py
+from app import app  
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 # Função para carregar os dados da tabela de remessa
 def carregar_dados_remessa():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
         )
         # Execute a consulta SQL para selecionar todos os registros da tabela "cema_paga1"
         consulta = "SELECT * FROM cema_paga1"
@@ -87,9 +90,9 @@ def layout():
                 dcc.DatePickerRange(
                     id='date-picker-range',
                     display_format='DD/MM/YYYY',
-                    style={'margin-top': '15px', 'margin-bottom': '15px'}  # Adiciona espaço acima e abaixo do filtro
+                    style={'margin-top': '15px', 'margin-bottom': '15px'}  
                 ),
-                width=8,  # Ajuste a largura da coluna para mover o componente para a direita
+                width=8,  
             ),
         ]),
                     dbc.Row(

@@ -8,15 +8,19 @@ from datetime import datetime, timedelta
 from app import app
 import json
 import dash
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 # Função para carregar os dados da tabela de remessa
 def carregar_dados_remessa():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
         )
         # Execute a consulta SQL para selecionar todos os registros da tabela "devolucao"
         consulta = "SELECT * FROM devolucao"

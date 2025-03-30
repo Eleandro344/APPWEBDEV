@@ -2,7 +2,7 @@ import dash
 import pandas as pd
 import dash_bootstrap_components as dbc
 from dash import html, dcc
-from components import agendamentos, avisos, home, faturamento, banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo,cemapaga,itau,sicoob,trocados
+from components import agendamentos, avisos, home, faturamento,grafeno,avarias,banco,rastrear,ajusteboletos,santander,login,devolucao,sofisa,safra,semacesso,bemvindo,cemapaga,itau,sicoob,trocados
 from dash import Dash, dcc, html
 import dash_bootstrap_components as dbc
 from dash.dependencies import Output, Input
@@ -22,7 +22,7 @@ from flask import request
 from components.shared_variables import username
 
 
-df = pd.read_excel('C:/Users/elean/Desktop/bancodedados/docs.xlsx')
+# df = pd.read_excel('C:/Users/elean/Desktop/bancodedados/docs.xlsx')
 
 
 sidebar = html.Div(
@@ -56,6 +56,15 @@ sidebar = html.Div(
                     active="exact",
                     className="nav-link-beat"#<i class="fa-solid fa-map-location-dot"></i>
                 ),    
+                # dbc.NavLink(
+                #     [
+                #         html.I(className="fa-solid fa-map-location-dot fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                #         html.Span("Avarias",className="sidebar-info"),
+                #     ],
+                #     href="/avarias",
+                #     active="exact",
+                #     className="nav-link-beat"#<i class="fa-solid fa-map-location-dot"></i>
+                # ),                    
                 dbc.NavLink(
                     [
                         html.I(className="fa-solid fa-barcode fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
@@ -64,7 +73,16 @@ sidebar = html.Div(
                     href="/itau",
                     active="exact",
                     className="nav-link-beat"
-                ),                     
+                ),       
+                dbc.NavLink(
+                    [
+                        html.I(className="fa-solid fa-barcode fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
+                        html.Span(" Grafeno",className="sidebar-info"),
+                    ],
+                    href="/grafeno",
+                    active="exact",
+                    className="nav-link-beat"
+                ),                               
                 dbc.NavLink(
                     [
                         html.I(className="fa-solid fa-barcode fa-lg",  style={"color": "#FFFFFF", 'verticalAlign': 'middle'}),
@@ -164,15 +182,18 @@ sidebar = html.Div(
     ],
     className="sidebar",
 )
+# avarias_lauout = avarias.layout()
+
 cemapaga_layout = cemapaga.layout()
-home_layout = home.layout()
+garfeno_layout = grafeno.layout()
+# home_layout = home.layout()
 semacesso_layout = semacesso.layout()
 faturamento_layout = faturamento.layout()
 banco_layout = banco.layout()
 login_layout = login.layout()
 devolucao_layout = devolucao.layout()
 santander_layout = santander.layout()
-trocados_layout = trocados.layout()
+# trocados_layout = trocados.layout()
 sofisa_layout = sofisa.layout()
 agendamentos_layout= agendamentos.layout()
 safra_layout = safra.layout()
@@ -242,6 +263,7 @@ def check_permission(username, pathname):
         or pathname == "/santander"
         or pathname == "/safra"
         or pathname == "/itau"
+        or pathname == "/grafeno"
         or pathname == "/rastrear"
         or pathname == "/trocados"
         or pathname == "/cemapaga"
@@ -275,7 +297,11 @@ def display_page(pathname):
         elif pathname == "/devolucao":
             return devolucao.layout()
         elif pathname == "/sicoob":
-            return sicoob.layout()        
+            return sicoob.layout()      
+        elif pathname == "/grafeno":    
+            return grafeno.layout()           
+        elif pathname == "/avarias":
+                return avarias.layout()              
         elif pathname == "/banco":
             return banco.layout()
         elif pathname == "/santander":
@@ -300,8 +326,5 @@ def display_page(pathname):
             return  cemapaga.layout()
     else:
         return dcc.Location(id="url", pathname="/login", refresh=True)
-
 if __name__ == '__main__':
-   # app.run_server(debug=False, host='10.1.1.15', port=8050, dev_tools_hot_reload=False)
-    app.run_server(debug=True, use_reloader=True, host='0.0.0.0', port=8040, dev_tools_hot_reload=True)
-    
+    app.run_server(debug=False, host='0.0.0.0', port=8050, dev_tools_hot_reload=False)

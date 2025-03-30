@@ -7,87 +7,45 @@ import mysql.connector
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from app import app  # Importa o objeto app do arquivo app.py
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
 # Função para carregar os dados da tabela de remessa
 def carregar_dados_remessa():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',  
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
         )
-# Consulta na tabela unicredremessa
-        consulta_remessa = "SELECT * FROM remessa_sofisa"
+        consulta_remessa = """
+    SELECT 
+            `Data da Gravação do Arquivo`,
+            `Código de movimento remessa`,   
+            `CODIGO DO DOC`,     
+            `Data de vencimento do boleto`,    
+            `Valor nominal do boleto`,    
+            `Nome do Pagador`,    
+            `Data Limite para concessão do desconto`,
+            `Valor do desconto a ser concedido`,
+            `Nº Sequencial do Registro`,
+            `Primeira instrução`,
+            `Segunda instrução`,
+            `Data de emissão do boleto`,
+            `Valor de Mora dia`,
+            `Percentual do IOF a ser recolhido`,
+            `Valor do abatimento ou Valor do segundo desconto`,
+            `Número de dias corridos para Protesto`,
+            `Número sequencial do registro no arquivo`,
+            `Número sequencial de registro no arquivo trailer`
+          FROM remessa_sofisa
+                """
         remessasofisa_bd = pd.read_sql(consulta_remessa, con=mydb)
         mydb.close()
-        new_order = [
-            'Data da Gravação do Arquivo',
-            'Código de movimento remessa',   
-            'CODIGO DO DOC',     
-            'Data de vencimento do boleto',    
-            'Valor nominal do boleto',    
-            'Nome do Pagador',    
-            'Identificação boleto aceite / não aceite',    
-            'Nº de inscrição do beneficiário',
-            'Código da agência beneficiário',
-            'Conta movimento beneficiário',
-            'Conta cobrança beneficiário',
-            'Identificação do boleto na empresa',
-            'Identificação do boleto no banco',
-            'Data do desconto 2',
-            'Reservado (uso banco)',
-            'Código de Multa',
-            'Percentual de Multa',
-            'Código da Moeda',
-            'Valor do boleto em outra unidade',
-            'Data da Multa',
-            'Tipo de Cobrança',
-            'Data Limite para concessão do desconto',
-            'Valor do desconto a ser concedido',
-            'Nº Sequencial do Registro',
-            'Primeira instrução',
-            'Segunda instrução',
-            'Código do Registro',    
-            'Data de emissão do boleto',
-            'Número do banco cobrador',
-            'Código agência Cobradora',
-            'Espécie do boleto',
-            'Valor de Mora dia',
-            'Percentual do IOF a ser recolhido',
-            'Valor do abatimento ou Valor do segundo desconto',
-            'Tipo de inscrição do Pagador',
-            'Número de inscrição do Pagador',
-            'Endereço do Pagador',
-            'Bairro do Pagador',
-            'Cep do Pagador',
-            'Sufixo do Cep do Pagador',
-            'Tipo de inscrição do beneficiário',    
-            'Cidade do Pagador',
-            'Unidade de Federação do Pagador',
-            'Identificador do complemento',
-            'Complemento',
-            'Número de dias corridos para Protesto',
-            'Número sequencial do registro no arquivo',
-            'Código do Registro header',
-            'Código da Remessa',
-            'Literal Remessa',
-            'Código de Serviço',
-            'Literal Serviço',
-            'Código de Transmissão',
-            'Nome da Empresa BENEFICIÁRIO',
-            'Código do Banco',
-            'Nome do Banco',
-            'Nº Sequencial do Arquivo',
-            'Código do Registro trailer',
-            'Quantidade de registro no arquivo',
-            'Valor Total dos boletos',
-            'Número sequencial de registro no arquivo trailer'
-        ]
-
-        remessasofisa_bd = remessasofisa_bd[new_order]
 
 
         novos_nomes = {
@@ -110,95 +68,43 @@ def carregar_dados_retorno():
     try:
         # Conexão com o banco de dados
         mydb = mysql.connector.connect(
-            host='db_sabertrimed.mysql.dbaas.com.br',
-            user='db_sabertrimed',
-            password='s@BRtR1m3d',  
-            database='db_sabertrimed',
+        host=os.getenv('DB_HOST'),
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        database=os.getenv('DB_NAME'),
         )
-# Consulta na tabela unicredremessa
-        consulta_remessa = "SELECT * FROM retorno_sofisa"
-        retornosofisa_db = pd.read_sql(consulta_remessa, con=mydb)
+        consulta_retorno = """
+    SELECT 
+            `Data da ocorrência`,
+            `Código movimento retorno`,        
+            `CODIGO DO DOC`,
+            `Tipo de cobrança`, 
+            `Data de vencimento do boleto`,   
+            `Valor nominal do boleto`,   
+            `Valor total recebido`,       
+            `Valor do juros de mora`,   
+            `Valor da tarifa cobrada`,
+            `Valor de outras despesas`,
+            `Valor de juros de atraso`,
+            `Valor de IOF recolhido`,
+            `Valor do abatimento concedido`,
+            `Valor do desconto concedido`,
+            `Código de erro 1`,
+            `Código de erro 2`,
+            `Código de erro 3`,
+            `Data de vencimento do boleto`,
+            `Valor de outros créditos`,
+            `Valor do IOF em outra unidade`,
+            `Número Sequencial do registro do arquivo corpo`,
+            `Número Sequencial do registro no arquivo cabeacrio`,
+            `Número Sequência do arquivo trailer`,
+            `Número Sequência do arquivo corpo`
+          FROM retorno_sofisa
+                """
+        retornosofisa_db = pd.read_sql(consulta_retorno, con=mydb)
         mydb.close()
-
         retornosofisa_db['Data da ocorrência'] = pd.to_datetime(retornosofisa_db['Data da ocorrência'])
 
-        new_order = [
-            'Data da ocorrência',
-            'Código movimento retorno',        
-            'CODIGO DO DOC',
-            'Tipo de cobrança', 
-            'Data de vencimento do boleto',   
-            'Valor nominal do boleto',   
-            'Valor total recebido',       
-            'Valor do juros de mora',   
-            'Valor da tarifa cobrada',
-            'Valor de outras despesas',
-            'Valor de juros de atraso',
-            'Valor de IOF recolhido',
-            'Valor do abatimento concedido',
-            'Valor do desconto concedido',
-            'Tipo de inscrição do beneficiário',
-            'Nº de inscrição do beneficiário',
-            'Código de agência do beneficiário',
-            'Conta cobrança do beneficiário corpo',
-            'Identificação do boleto no banco',
-            'Número do documento',
-            'Código Original da remessa',
-            'Código de erro 1',
-            'Código de erro 2',
-            'Código de erro 3',
-            'Data de vencimento do boleto',
-            'Número do banco cobrador',
-            'Código da agência recebedora do boleto',
-            'Espécie do boleto',
-            'Valor de outros créditos',
-            'Identificação boleto aceite / não aceite',
-            'Data da efetivação crédito',
-            'Nome do Pagador',
-            'Identificador do complemento',
-            'Código da moeda',
-            'Código do Registro',     
-            'Valor do boleto em outra unidade',
-            'Valor do IOF em outra unidade',
-            'Valor do débito ou crédito',
-            'Identificação do lançamento',
-            'Complemento',
-            'Sigla da empresa no sistema corpo',
-            'Número Sequência do arquivo corpo',
-            'Número Sequencial do registro do arquivo corpo',
-            'Código do registro cabecario',
-            'Código da remessa cabecario',
-            'Literal de transmissão cabecario',
-            'Código de serviço cabecario',
-            'Literal do serviço',
-            'Código da agência do beneficiário',
-            'Conta Movimento do beneficiário header',
-            'Nome do beneficiário',
-            'Código do banco trailer',
-            'Nome do banco',
-            'Código do beneficiário',
-            'Sigla da empresa no sistema',
-            'Número Sequência do arquivo cabecario',
-            'Número Sequencial do registro no arquivo cabeacrio',
-            'Código do Registro trailer',
-            'Código da remessa trailer',
-            'Código do Serviço trailer',
-            'Código do banco',
-            'Quantidade de registros na cobrança Simples',
-            'Valor total dos boletos na cobrança Simples',
-            'Número do aviso de cobrança Simples',
-            'Quantidade de registros na cobrança caucionada',
-            'Valor total dos boletos na cobrança caucionada',
-            'Número do aviso da cobrança caucionada',
-            'Quantidade de registros na cobrança descontada',
-            'Valor total dos boletos na cobrança descontada',
-            'Número do aviso da cobrança descontada',
-            'Número Sequência do arquivo trailer',
-            'Número Sequencial do registro do arquivo trailer',
-            'Data da geração do arquivo',  
-            'Nome do arquivo',
-        ]
-        retornosofisa_db = retornosofisa_db[new_order]
         novos_nomes = {
             'Data da ocorrência': 'Data da Ocorrencia',
             'Código movimento retorno': 'Ocorrencia',

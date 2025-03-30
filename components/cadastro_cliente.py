@@ -1,7 +1,6 @@
 from dash import html, dcc, callback, Output, Input, State
 import dash_bootstrap_components as dbc
 from app import app
-import mysql.connector
 from dash import dcc
 import dash
 import dash_bootstrap_components as dbc
@@ -10,6 +9,12 @@ from dash.dependencies import Input, Output, State, MATCH, ALL
 from dash.exceptions import PreventUpdate
 import pandas as pd
 import mysql.connector
+from dotenv import load_dotenv
+import os
+import mysql.connector
+
+load_dotenv()
+
 from dash import dcc
 from app import app  # Importa o objeto app do arquivo app.py
 
@@ -66,10 +71,10 @@ def cadastrar_cliente(n_clicks, nome, email, telefone):
         try:
             # Conectar ao banco de dados
             mydb = mysql.connector.connect(
-                host='db_sabertrimed.mysql.dbaas.com.br',
-                user='db_sabertrimed',
-                password='s@BRtR1m3d',
-                database='db_sabertrimed',
+            host=os.getenv('DB_HOST'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD'),
+            database=os.getenv('DB_NAME'),
             )
 
             # Executar a consulta SQL para inserir um novo cliente
